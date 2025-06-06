@@ -126,6 +126,7 @@ func (s *TelegramService) SendMessage(chatID interface{}, text string) error {
 
 	msg := tgbotapi.NewMessage(chatIDInt64, text)
 	msg.ParseMode = "Markdown"
+	msg.DisableWebPagePreview = true
 
 	// Retry sending message up to 3 times
 	var err error
