@@ -1,0 +1,15 @@
+# Binaries
+/bin/
+
+# Environment variables
+.env
+
+# Output of the go coverage tool
+*.out
+
+# Dependency directories
+/vendor/
+
+# Air hot reload
+/tmp/
+.air.toml
