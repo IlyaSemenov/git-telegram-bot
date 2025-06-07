@@ -26,7 +26,7 @@ A serverless bot that delivers GitHub webhook events to Telegram groups.
 
 ## Requirements
 
-- Go 1.21 or higher
+- Go 1.24 or higher
 - AWS account (for Lambda deployment)
 - Telegram Bot Token (from [@BotFather](https://t.me/BotFather))
 
