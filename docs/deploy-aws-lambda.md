@@ -177,3 +177,11 @@ In your GitHub repository:
 The GitHub workflow file (`.github/workflows/deploy.yml`) is already included in the repository, so you don't need to create any additional files.
 
 Now that you've configured the AWS credentials in GitHub Secrets, automatic deployments are active. Every time you push to the main branch, GitHub Actions will automatically build and deploy your bot to AWS Lambda.
+
+## Troubleshooting
+
+If you encounter issues with the bot, you can check the CloudWatch logs for the Lambda function. The following command will tail the logs and show you the most recent events:
+
+```bash
+aws logs tail /aws/lambda/github-telegram-bot --follow
+```
