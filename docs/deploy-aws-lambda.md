@@ -117,8 +117,63 @@ Note the function URL from the output.
 
 ## Updating the Bot
 
-To update the bot after making changes:
+### Manual Updates
+
+To manually update the bot after making changes:
 
 ```bash
 make update
 ```
+
+### Automatic Updates with GitHub Actions
+
+The repository is configured with GitHub Actions to automatically deploy your bot whenever you push to the main branch. You just need to configure the required AWS credentials.
+
+#### Step 1: Create IAM User for GitHub Actions
+
+Create a dedicated IAM user with limited permissions for GitHub Actions:
+
+```bash
+# Create the IAM user
+aws iam create-user --user-name github-actions-lambda-deployer
+
+# Create a policy that only allows updating the Lambda function
+aws iam create-policy \
+  --policy-name LambdaUpdateFunctionCodePolicy \
+  --policy-document '{
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": "lambda:UpdateFunctionCode",
+        "Resource": "arn:aws:lambda:*:*:function:github-telegram-bot"
+      }
+    ]
+  }'
+
+# Attach the policy to the user
+aws iam attach-user-policy \
+  --user-name github-actions-lambda-deployer \
+  --policy-arn $(aws iam list-policies --query 'Policies[?PolicyName==`LambdaUpdateFunctionCodePolicy`].Arn' --output text)
+
+# Create access key for the user
+aws iam create-access-key --user-name github-actions-lambda-deployer
+```
+
+Save the `AccessKeyId` and `SecretAccessKey` from the output - you'll need these for GitHub secrets.
+
+#### Step 2: Add GitHub Secrets
+
+In your GitHub repository:
+
+1. Go to Settings > Secrets and variables > Actions
+2. Add the following secrets:
+   - `AWS_ACCESS_KEY_ID`: The AccessKeyId from the previous step
+   - `AWS_SECRET_ACCESS_KEY`: The SecretAccessKey from the previous step
+   - `AWS_REGION`: Your AWS region (e.g., `us-east-1`)
+
+#### Step 3: Automatic Deployment
+
+The GitHub workflow file (`.github/workflows/deploy.yml`) is already included in the repository, so you don't need to create any additional files.
+
+Now that you've configured the AWS credentials in GitHub Secrets, automatic deployments are active. Every time you push to the main branch, GitHub Actions will automatically build and deploy your bot to AWS Lambda.
