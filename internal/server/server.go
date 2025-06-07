@@ -67,12 +67,14 @@ func (s *Server) SetupTelegramBot() error {
 	// Set up webhook
 	webhookURL := config.Global.BaseURL + "/telegram/webhook"
 	if err := s.telegramSvc.SetWebhook(webhookURL); err != nil {
-		return err
+		return fmt.Errorf("Failed to set up Telegram webhook at %s: %w", webhookURL, err)
+	} else {
+		log.Printf("Successfully set up Telegram webhook at %s", webhookURL)
 	}
 
 	// Set up commands
 	if err := s.telegramSvc.SetCommands(); err != nil {
-		return fmt.Errorf("failed to set commands: %w", err)
+		return fmt.Errorf("Failed to set Telegram commands: %w", err)
 	}
 
 	return nil
