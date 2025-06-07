@@ -16,7 +16,7 @@ A serverless bot that delivers GitHub webhook events to Telegram groups.
 
 ## How It Works
 
-1. Add the bot to your Telegram group
+1. Add [@github_hook_bot](https://t.me/github_hook_bot) to your Telegram group
 2. The bot provides a unique webhook URL for your GitHub repository
 3. Add this URL to your GitHub repository's webhook settings
 4. GitHub events are now delivered to your Telegram group
