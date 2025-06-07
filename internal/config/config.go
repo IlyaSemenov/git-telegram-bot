@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"sort"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -56,13 +55,6 @@ func Initialize() error {
 		if err := godotenv.Load(); err != nil {
 			fmt.Printf("Warning: Error loading .env file: %v\n", err)
 		}
-	}
-
-	fmt.Println("--------------")
-	envVars := os.Environ()
-	sort.Strings(envVars)
-	for _, envVar := range envVars {
-		fmt.Println(envVar)
 	}
 
 	// Try to auto-discover BASE_URL if we're in Lambda
