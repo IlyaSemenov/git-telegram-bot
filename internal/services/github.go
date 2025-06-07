@@ -31,6 +31,7 @@ func (s *GitHubService) handlePingEvent(payload []byte) (string, error) {
 		HookID     int    `json:"hook_id"`
 		Repository struct {
 			FullName string `json:"full_name"`
+			HTMLURL  string `json:"html_url"`
 		} `json:"repository"`
 	}
 
@@ -38,8 +39,8 @@ func (s *GitHubService) handlePingEvent(payload []byte) (string, error) {
 		return "", err
 	}
 
-	return fmt.Sprintf("✅ GitHub webhook configured successfully for %s\n\nZen: %s",
-		event.Repository.FullName, event.Zen), nil
+	return fmt.Sprintf("✅ GitHub webhook configured successfully for [%s](%s).",
+		event.Repository.FullName, event.Repository.HTMLURL), nil
 }
 
 func (s *GitHubService) handlePushEvent(payload []byte, branchFilter string) (string, error) {
