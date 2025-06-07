@@ -109,6 +109,7 @@ func (s *GitHubService) handleWorkflowRunEvent(payload []byte) (string, error) {
 		} `json:"workflow_run"`
 		Repository struct {
 			FullName string `json:"full_name"`
+			HTMLURL  string `json:"html_url"`
 		} `json:"repository"`
 	}
 
@@ -137,9 +138,11 @@ func (s *GitHubService) handleWorkflowRunEvent(payload []byte) (string, error) {
 		emoji = "ℹ️"
 	}
 
-	message.WriteString(fmt.Sprintf("%s Workflow [%s](%s) %s in %s\n",
-		emoji, event.WorkflowRun.Name, event.WorkflowRun.HTMLURL,
-		event.WorkflowRun.Conclusion, event.Repository.FullName))
+	message.WriteString(fmt.Sprintf("%s Workflow %s: [%s](%s) — [%s](%s).",
+		emoji, event.WorkflowRun.Conclusion,
+		event.Repository.FullName, event.Repository.HTMLURL,
+		event.WorkflowRun.Name, event.WorkflowRun.HTMLURL,
+	))
 
 	return message.String(), nil
 }
