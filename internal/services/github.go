@@ -55,6 +55,7 @@ func (s *GitHubService) handlePushEvent(payload []byte, branchFilter string) (st
 		Pusher struct {
 			Name string `json:"name"`
 		} `json:"pusher"`
+		Forced  bool `json:"forced"`
 		Commits []struct {
 			ID        string `json:"id"`
 			Message   string `json:"message"`
@@ -82,9 +83,15 @@ func (s *GitHubService) handlePushEvent(payload []byte, branchFilter string) (st
 	// Build message
 	var message strings.Builder
 
+	// Use appropriate verb based on whether it's a force push
+	pushVerb := "pushed"
+	if event.Forced {
+		pushVerb = "force-pushed"
+	}
+
 	message.WriteString(fmt.Sprintf(
-		"🚀 *%s* pushed to [%s](%s) (branch `%s`):\n\n",
-		event.Pusher.Name, event.Repository.FullName, event.Repository.HTMLURL, branch,
+		"🚀 *%s* %s to [%s](%s) (branch `%s`):\n\n",
+		event.Pusher.Name, pushVerb, event.Repository.FullName, event.Repository.HTMLURL, branch,
 	))
 
 	// Add commit information
