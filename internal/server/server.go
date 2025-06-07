@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -62,7 +63,17 @@ func (s *Server) ListenAndServe() error {
 	return http.ListenAndServe(":8080", s.router)
 }
 
-func (s *Server) SetupTelegramWebhook() error {
+func (s *Server) SetupTelegramBot() error {
+	// Set up webhook
 	webhookURL := config.Global.BaseURL + "/telegram/webhook"
-	return s.telegramSvc.SetWebhook(webhookURL)
+	if err := s.telegramSvc.SetWebhook(webhookURL); err != nil {
+		return err
+	}
+
+	// Set up commands
+	if err := s.telegramSvc.SetCommands(); err != nil {
+		return fmt.Errorf("failed to set commands: %w", err)
+	}
+
+	return nil
 }

@@ -35,6 +35,28 @@ func (s *TelegramService) SetWebhook(webhookURL string) error {
 	return err
 }
 
+// SetCommands sets the list of available commands for the bot
+func (s *TelegramService) SetCommands() error {
+	commands := []tgbotapi.BotCommand{
+		{
+			Command:     "start",
+			Description: "Start the bot",
+		},
+		{
+			Command:     "help",
+			Description: "Show help information",
+		},
+		{
+			Command:     "webhook",
+			Description: "Get your unique GitHub webhook URL",
+		},
+	}
+
+	config := tgbotapi.NewSetMyCommands(commands...)
+	_, err := s.bot.Request(config)
+	return err
+}
+
 func (s *TelegramService) ProcessUpdate(updateJSON []byte) error {
 	var update tgbotapi.Update
 	if err := json.Unmarshal(updateJSON, &update); err != nil {

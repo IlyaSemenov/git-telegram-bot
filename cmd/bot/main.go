@@ -31,7 +31,7 @@ func init() {
 	}
 
 	// Setup Telegram webhook
-	if err := srv.SetupTelegramWebhook(); err != nil {
+	if err := srv.SetupTelegramBot(); err != nil {
 		log.Printf("Failed to set up Telegram webhook: %v", err)
 	} else {
 		log.Printf("Successfully set up Telegram webhook with BASE_URL: %s", config.Global.BaseURL)
