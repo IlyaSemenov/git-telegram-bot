@@ -67,7 +67,7 @@ func (s *GitLabService) handlePushEvent(payload []byte) (string, error) {
 	if len(event.Commits) > 0 {
 		message.WriteString(":\n\n")
 		for _, commit := range event.Commits {
-			message.WriteString(fmt.Sprintf("✅ *%s*: [%s](%s)\n",
+			message.WriteString(fmt.Sprintf("*%s*: [%s](%s)\n",
 				commit.Author.Name, strings.TrimSpace(commit.Message), commit.URL))
 		}
 	}
