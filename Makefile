@@ -1,4 +1,4 @@
-.PHONY: build clean deploy lint build-lambda update update-env run dev
+.PHONY: build clean deploy lint build-lambda update update-env run dev terraform-init terraform-apply terraform-destroy
 
 # Build the application
 build:
@@ -10,32 +10,34 @@ clean:
 
 # Build for AWS Lambda
 build-lambda:
-	GOOS=linux GOARCH=amd64 go build -o bin/bootstrap ./cmd/bot
+	GOOS=linux GOARCH=arm64 go build -o bin/bootstrap ./cmd/bot
 	cd bin && zip function.zip bootstrap
 
-# Deploy to AWS Lambda
-deploy: build-lambda
-	aws lambda create-function \
-		--function-name git-telegram-bot \
-		--runtime provided.al2 \
-		--handler bootstrap \
-		--zip-file fileb://bin/function.zip \
-		--role $(LAMBDA_ROLE_ARN) \
-		--environment Variables="{TELEGRAM_BOT_TOKEN=$(TELEGRAM_BOT_TOKEN),ENCRYPTION_KEY=$(ENCRYPTION_KEY)}" \
-		--timeout 30 \
-		--memory-size 128
+# Initialize Terraform
+terraform-init:
+	cd terraform && terraform init
+
+# Apply Terraform configuration
+terraform-apply:
+	cd terraform && terraform apply
+
+# Destroy Terraform resources
+terraform-destroy:
+	cd terraform && terraform destroy
+
+# Deploy to AWS Lambda using Terraform
+deploy: build-lambda terraform-apply
 
 # Update existing Lambda function
 update: build-lambda
 	aws lambda update-function-code \
 		--function-name git-telegram-bot \
-		--zip-file fileb://bin/function.zip
+		--zip-file fileb://bin/function.zip \
+		--architectures arm64
 
-# Update environment variables
+# Update environment variables (use after terraform apply)
 update-env:
-	aws lambda update-function-configuration \
-		--function-name git-telegram-bot \
-		--environment Variables="{TELEGRAM_BOT_TOKEN=$(TELEGRAM_BOT_TOKEN),ENCRYPTION_KEY=$(ENCRYPTION_KEY)}"
+	cd terraform && terraform apply -target=aws_lambda_function.git_telegram_bot
 
 # Run linter
 lint:

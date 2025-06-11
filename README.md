@@ -13,8 +13,7 @@ A serverless bot that delivers GitHub and GitLab webhook events to Telegram grou
   - GitLab pipeline events
   - GitLab merge request events
 - Secure chat ID encryption
-- Easy deployment to AWS Lambda
-- Custom domain support
+- Easy deployment to AWS Lambda with Terraform
 
 ## How It Works
 
@@ -25,16 +24,19 @@ A serverless bot that delivers GitHub and GitLab webhook events to Telegram grou
 
 ## Documentation
 
-- [Deploying to AWS Lambda](docs/deploy-aws-lambda.md)
 - [Running Locally](docs/run-local.md)
+- [Deploying to AWS Lambda with Terraform](docs/deploy-aws-lambda.md)
 
 ## Requirements
 
 - Go 1.24 or higher
-- AWS account (for Lambda deployment)
 - Telegram Bot Token (from [@BotFather](https://t.me/BotFather))
+- AWS account (for Lambda deployment)
+- Terraform 1.0+ (for infrastructure deployment)
 
 ## Quick Start
+
+### Local Development
 
 1. Clone this repository
 2. Create a `.env` file based on `.env.example`
@@ -42,6 +44,15 @@ A serverless bot that delivers GitHub and GitLab webhook events to Telegram grou
 4. Run `make run` to start the bot locally
 5. Add the bot to your Telegram group
 6. Follow the bot's instructions to set up GitHub webhooks
+
+### AWS Deployment
+
+1. Clone this repository
+2. Navigate to the `terraform` directory
+3. Create a `terraform.tfvars` file with your configuration
+4. Run `make terraform-init` and `make terraform-apply`
+5. Run `make update` to deploy the updated code to Lambda
+6. Add the bot to your Telegram group
 
 ## License
 

@@ -1,0 +1,6 @@
+# Telegram Bot Token (required)
+# Get this from @BotFather on Telegram
+telegram_bot_token = ""
+
+# AWS Region (optional, defaults to us-east-1)
+aws_region = "us-east-1"

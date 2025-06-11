@@ -20,7 +20,7 @@ jobs:
       - name: Build Lambda package
         run: |
           # For CGO, see https://github.com/aws/aws-lambda-go/issues/340
-          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o bootstrap ./cmd/bot
+          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o bootstrap ./cmd/bot
           zip lambda-package.zip bootstrap
 
       - name: Configure AWS credentials
