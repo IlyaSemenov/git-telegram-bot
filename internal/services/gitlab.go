@@ -116,8 +116,7 @@ func (s *GitLabService) handlePipelineEvent(payload []byte) (string, error) {
 
 	// Only notify on completed pipelines
 	if event.ObjectAttributes.Status != "success" &&
-		event.ObjectAttributes.Status != "failed" &&
-		event.ObjectAttributes.Status != "canceled" {
+		event.ObjectAttributes.Status != "failed" {
 		return "", nil
 	}
 
@@ -131,8 +130,6 @@ func (s *GitLabService) handlePipelineEvent(payload []byte) (string, error) {
 		emoji = "✅"
 	case "failed":
 		emoji = "❌"
-	case "canceled":
-		emoji = "⚠️"
 	default:
 		emoji = "ℹ️"
 	}
