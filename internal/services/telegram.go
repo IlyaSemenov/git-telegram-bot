@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"strings"
-	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -181,24 +179,6 @@ func (s *TelegramService) SendMessage(chatID interface{}, text string) error {
 	msg.ParseMode = "HTML"
 	msg.DisableWebPagePreview = true
 
-	// Retry sending message up to 3 times
-	var err error
-	for i := 0; i < 3; i++ {
-		_, err = s.bot.Send(msg)
-		if err == nil {
-			return nil
-		}
-
-		// If message failed due to HTML parsing, try without HTML
-		if strings.Contains(err.Error(), "can't parse entities") {
-			msg.ParseMode = ""
-			_, err = s.bot.Send(msg)
-			return err
-		}
-
-		// Wait before retrying
-		time.Sleep(time.Second)
-	}
-
+	_, err := s.bot.Send(msg)
 	return err
 }
