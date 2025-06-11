@@ -103,7 +103,7 @@ func (s *TelegramService) handleStartCommand(message *tgbotapi.Message) error {
 }
 
 func (s *TelegramService) handleHelpCommand(message *tgbotapi.Message) error {
-	text := "📚 *Available Commands*\n\n" +
+	text := "📚 <b>Available Commands</b>\n\n" +
 		"• /start - Start the bot\n" +
 		"• /help - Show this help message\n" +
 		"• /github - Get your unique GitHub webhook URL\n" +
@@ -125,8 +125,8 @@ func (s *TelegramService) handleGitHubCommand(message *tgbotapi.Message) error {
 	webhookURL := fmt.Sprintf("%s/github/%s", s.baseURL, url.PathEscape(encryptedChatID))
 
 	// Create response message
-	text := fmt.Sprintf("🔗 *Your GitHub Webhook URL*\n\n`%s`\n\n", webhookURL) +
-		"*How to set up:*\n\n" +
+	text := fmt.Sprintf("🔗 <b>Your GitHub Webhook URL</b>\n\n<code>%s</code>\n\n", webhookURL) +
+		"<b>How to set up:</b>\n\n" +
 		"1. Go to your GitHub repository\n" +
 		"2. Click on Settings > Webhooks > Add webhook\n" +
 		"3. Paste the URL above in the 'Payload URL' field\n" +
@@ -150,8 +150,8 @@ func (s *TelegramService) handleGitLabCommand(message *tgbotapi.Message) error {
 	webhookURL := fmt.Sprintf("%s/gitlab/%s", s.baseURL, url.PathEscape(encryptedChatID))
 
 	// Create response message
-	text := fmt.Sprintf("🔗 *Your GitLab Webhook URL*\n\n`%s`\n\n", webhookURL) +
-		"*How to set up:*\n\n" +
+	text := fmt.Sprintf("🔗 <b>Your GitLab Webhook URL</b>\n\n<code>%s</code>\n\n", webhookURL) +
+		"<b>How to set up:</b>\n\n" +
 		"1. Go to your GitLab project\n" +
 		"2. Click on Settings > Webhooks\n" +
 		"3. Paste the URL above in the 'URL' field\n" +
@@ -178,7 +178,7 @@ func (s *TelegramService) SendMessage(chatID interface{}, text string) error {
 	}
 
 	msg := tgbotapi.NewMessage(chatIDInt64, text)
-	msg.ParseMode = "Markdown"
+	msg.ParseMode = "HTML"
 	msg.DisableWebPagePreview = true
 
 	// Retry sending message up to 3 times
@@ -189,7 +189,7 @@ func (s *TelegramService) SendMessage(chatID interface{}, text string) error {
 			return nil
 		}
 
-		// If message failed due to markdown parsing, try without markdown
+		// If message failed due to HTML parsing, try without HTML
 		if strings.Contains(err.Error(), "can't parse entities") {
 			msg.ParseMode = ""
 			_, err = s.bot.Send(msg)

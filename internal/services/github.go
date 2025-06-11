@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"html"
 	"strings"
 )
 
@@ -39,8 +40,11 @@ func (s *GitHubService) handlePingEvent(payload []byte) (string, error) {
 		return "", err
 	}
 
-	return fmt.Sprintf("✅ GitHub webhook configured successfully for [%s](%s).",
-		event.Repository.FullName, event.Repository.HTMLURL), nil
+	return fmt.Sprintf(
+		"✅ GitHub webhook configured successfully for <a href=\"%s\">%s</a>.",
+		event.Repository.HTMLURL,
+		html.EscapeString(event.Repository.FullName),
+	), nil
 }
 
 func (s *GitHubService) handlePushEvent(payload []byte, branchFilter string) (string, error) {
@@ -90,16 +94,24 @@ func (s *GitHubService) handlePushEvent(payload []byte, branchFilter string) (st
 	}
 
 	message.WriteString(fmt.Sprintf(
-		"🚀 *%s* %s to [%s](%s) (branch `%s`)",
-		event.Pusher.Name, pushVerb, event.Repository.FullName, event.Repository.HTMLURL, branch,
+		"🚀 <b>%s</b> %s to <a href=\"%s\">%s</a> (branch <code>%s</code>)",
+		html.EscapeString(event.Pusher.Name),
+		pushVerb,
+		event.Repository.HTMLURL,
+		html.EscapeString(event.Repository.FullName),
+		html.EscapeString(branch),
 	))
 
 	// Add commit information
 	if len(event.Commits) > 0 {
 		message.WriteString(":\n\n")
 		for _, commit := range event.Commits {
-			message.WriteString(fmt.Sprintf("*%s*: [%s](%s)\n",
-				commit.Author.Name, commit.Message, commit.URL))
+			message.WriteString(fmt.Sprintf(
+				"<b>%s</b>: <a href=\"%s\">%s</a>\n",
+				html.EscapeString(commit.Author.Name),
+				commit.URL,
+				html.EscapeString(commit.Message),
+			))
 		}
 	}
 
@@ -146,10 +158,14 @@ func (s *GitHubService) handleWorkflowRunEvent(payload []byte) (string, error) {
 		emoji = "ℹ️"
 	}
 
-	message.WriteString(fmt.Sprintf("%s Workflow %s: [%s](%s) — [%s](%s).",
-		emoji, event.WorkflowRun.Conclusion,
-		event.Repository.FullName, event.Repository.HTMLURL,
-		event.WorkflowRun.Name, event.WorkflowRun.HTMLURL,
+	message.WriteString(fmt.Sprintf(
+		"%s Workflow %s: <a href=\"%s\">%s</a> — <a href=\"%s\">%s</a>.",
+		emoji,
+		html.EscapeString(event.WorkflowRun.Conclusion),
+		event.Repository.HTMLURL,
+		html.EscapeString(event.Repository.FullName),
+		event.WorkflowRun.HTMLURL,
+		html.EscapeString(event.WorkflowRun.Name),
 	))
 
 	return message.String(), nil

@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"html"
 	"strings"
 )
 
@@ -59,16 +60,23 @@ func (s *GitLabService) handlePushEvent(payload []byte) (string, error) {
 	var message strings.Builder
 
 	message.WriteString(fmt.Sprintf(
-		"🚀 *%s* pushed to [%s](%s) (branch `%s`)",
-		event.UserName, event.Project.Name, event.Project.WebURL, branch,
+		"🚀 <b>%s</b> pushed to <a href=\"%s\">%s</a> (branch <code>%s</code>)",
+		html.EscapeString(event.UserName),
+		event.Project.WebURL,
+		html.EscapeString(event.Project.Name),
+		html.EscapeString(branch),
 	))
 
 	// Add commit information
 	if len(event.Commits) > 0 {
 		message.WriteString(":\n\n")
 		for _, commit := range event.Commits {
-			message.WriteString(fmt.Sprintf("*%s*: [%s](%s)\n",
-				commit.Author.Name, strings.TrimSpace(commit.Message), commit.URL))
+			message.WriteString(fmt.Sprintf(
+				"<b>%s</b>: <a href=\"%s\">%s</a>\n",
+				html.EscapeString(commit.Author.Name),
+				commit.URL,
+				html.EscapeString(strings.TrimSpace(commit.Message)),
+			))
 		}
 	}
 
@@ -129,11 +137,15 @@ func (s *GitLabService) handlePipelineEvent(payload []byte) (string, error) {
 		emoji = "ℹ️"
 	}
 
-	message.WriteString(fmt.Sprintf("%s Pipeline %s: [%s](%s) — [Pipeline #%d](%s) (branch `%s`)",
-		emoji, event.ObjectAttributes.Status,
-		event.Project.Name, event.Project.WebURL,
-		event.ObjectAttributes.ID, event.ObjectAttributes.URL,
-		event.ObjectAttributes.Ref,
+	message.WriteString(fmt.Sprintf(
+		"%s Pipeline %s: <a href=\"%s\">%s</a> — <a href=\"%s\">Pipeline #%d</a> (branch <code>%s</code>)",
+		emoji,
+		html.EscapeString(event.ObjectAttributes.Status),
+		event.Project.WebURL,
+		html.EscapeString(event.Project.Name),
+		event.ObjectAttributes.URL,
+		event.ObjectAttributes.ID,
+		html.EscapeString(event.ObjectAttributes.Ref),
 	))
 
 	// Add build information
@@ -163,8 +175,12 @@ func (s *GitLabService) handlePipelineEvent(payload []byte) (string, error) {
 				durationStr = fmt.Sprintf("%.1f seconds", build.Duration)
 			}
 
-			message.WriteString(fmt.Sprintf("%s *%s* (%s)\n",
-				buildEmoji, build.Name, durationStr))
+			message.WriteString(fmt.Sprintf(
+				"%s <b>%s</b> (%s)\n",
+				buildEmoji,
+				html.EscapeString(build.Name),
+				durationStr,
+			))
 		}
 	}
 
@@ -237,11 +253,17 @@ func (s *GitLabService) handleMergeRequestEvent(payload []byte) (string, error) 
 		action = event.ObjectAttributes.Action
 	}
 
-	message.WriteString(fmt.Sprintf("%s *%s* %s merge request: [%s](%s) — [%s](%s) (`%s` → `%s`).",
-		emoji, event.User.Name, action,
-		event.Project.Name, event.Project.WebURL,
-		event.ObjectAttributes.Title, event.ObjectAttributes.URL,
-		event.ObjectAttributes.SourceBranch, event.ObjectAttributes.TargetBranch,
+	message.WriteString(fmt.Sprintf(
+		"%s <b>%s</b> %s merge request: <a href=\"%s\">%s</a> — <a href=\"%s\">%s</a> (<code>%s</code> → <code>%s</code>).",
+		emoji,
+		html.EscapeString(event.User.Name),
+		action,
+		event.Project.WebURL,
+		html.EscapeString(event.Project.Name),
+		event.ObjectAttributes.URL,
+		html.EscapeString(event.ObjectAttributes.Title),
+		html.EscapeString(event.ObjectAttributes.SourceBranch),
+		html.EscapeString(event.ObjectAttributes.TargetBranch),
 	))
 
 	return message.String(), nil
