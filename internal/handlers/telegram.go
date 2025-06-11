@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github-telegram-bot/internal/services"
+	"git-telegram-bot/internal/services"
 )
 
 type TelegramHandler struct {

@@ -11,27 +11,24 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type GitHubHandler struct {
+type GitLabHandler struct {
 	cryptoSvc   *services.CryptoService
 	telegramSvc *services.TelegramService
-	githubSvc   *services.GitHubService
+	gitlabSvc   *services.GitLabService
 }
 
-func NewGitHubHandler(cryptoSvc *services.CryptoService, telegramSvc *services.TelegramService, githubSvc *services.GitHubService) *GitHubHandler {
-	return &GitHubHandler{
+func NewGitLabHandler(cryptoSvc *services.CryptoService, telegramSvc *services.TelegramService, gitlabSvc *services.GitLabService) *GitLabHandler {
+	return &GitLabHandler{
 		cryptoSvc:   cryptoSvc,
 		telegramSvc: telegramSvc,
-		githubSvc:   githubSvc,
+		gitlabSvc:   gitlabSvc,
 	}
 }
 
-func (h *GitHubHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
+func (h *GitLabHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	// Get encrypted chat ID from URL
 	vars := mux.Vars(r)
 	encryptedChatID := vars["chatID"]
-
-	// Get branch filter from query parameters if present
-	branchFilter := r.URL.Query().Get("branch")
 
 	// Decrypt chat ID
 	chatID, err := h.cryptoSvc.DecryptChatID(encryptedChatID)
@@ -49,19 +46,19 @@ func (h *GitHubHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get event type from GitHub headers
-	eventType := r.Header.Get("X-GitHub-Event")
+	// Get event type from GitLab headers
+	eventType := r.Header.Get("X-Gitlab-Event")
 	if eventType == "" {
-		log.Printf("Missing X-GitHub-Event header")
-		http.Error(w, "Missing X-GitHub-Event header", http.StatusBadRequest)
+		log.Printf("Missing X-Gitlab-Event header")
+		http.Error(w, "Missing X-Gitlab-Event header", http.StatusBadRequest)
 		return
 	}
 
-	// Parse GitHub event
-	message, err := h.githubSvc.ParseEvent(eventType, body, branchFilter)
+	// Parse GitLab event
+	message, err := h.gitlabSvc.ParseEvent(eventType, body)
 	if err != nil {
-		log.Printf("Failed to parse GitHub event: %v", err)
-		http.Error(w, "Failed to parse GitHub event", http.StatusBadRequest)
+		log.Printf("Failed to parse GitLab event: %v", err)
+		http.Error(w, "Failed to parse GitLab event", http.StatusBadRequest)
 		return
 	}
 

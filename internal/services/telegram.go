@@ -47,8 +47,12 @@ func (s *TelegramService) SetCommands() error {
 			Description: "Show help information",
 		},
 		{
-			Command:     "webhook",
+			Command:     "github",
 			Description: "Get your unique GitHub webhook URL",
+		},
+		{
+			Command:     "gitlab",
+			Description: "Get your unique GitLab webhook URL",
 		},
 	}
 
@@ -81,17 +85,19 @@ func (s *TelegramService) handleCommand(message *tgbotapi.Message) error {
 		return s.handleStartCommand(message)
 	case "help":
 		return s.handleHelpCommand(message)
-	case "webhook":
-		return s.handleWebhookCommand(message)
+	case "github":
+		return s.handleGitHubCommand(message)
+	case "gitlab":
+		return s.handleGitLabCommand(message)
 	default:
 		return s.SendMessage(message.Chat.ID, "Unknown command. Type /help for available commands.")
 	}
 }
 
 func (s *TelegramService) handleStartCommand(message *tgbotapi.Message) error {
-	text := "👋 Welcome to GitHub-Telegram Bot!\n\n" +
-		"I can forward GitHub webhook events to this chat.\n\n" +
-		"Use /webhook to get your unique webhook URL for GitHub."
+	text := "👋 Welcome to Git Pusher Bot!\n\n" +
+		"I can forward GitHub and GitLab webhook events to this chat.\n\n" +
+		"Use /github or /gitlab to get your unique webhook URLs."
 
 	return s.SendMessage(message.Chat.ID, text)
 }
@@ -100,13 +106,14 @@ func (s *TelegramService) handleHelpCommand(message *tgbotapi.Message) error {
 	text := "📚 *Available Commands*\n\n" +
 		"• /start - Start the bot\n" +
 		"• /help - Show this help message\n" +
-		"• /webhook - Get your unique GitHub webhook URL\n\n" +
-		"To set up GitHub webhooks, use the /webhook command and add the URL to your GitHub repository's webhook settings."
+		"• /github - Get your unique GitHub webhook URL\n" +
+		"• /gitlab - Get your unique GitLab webhook URL\n\n" +
+		"To set up webhooks, use the appropriate command and add the URL to your repository's webhook settings."
 
 	return s.SendMessage(message.Chat.ID, text)
 }
 
-func (s *TelegramService) handleWebhookCommand(message *tgbotapi.Message) error {
+func (s *TelegramService) handleGitHubCommand(message *tgbotapi.Message) error {
 	// Encrypt chat ID
 	chatIDStr := fmt.Sprintf("%d", message.Chat.ID)
 	encryptedChatID, err := s.cryptoSvc.EncryptChatID(chatIDStr)
@@ -114,7 +121,7 @@ func (s *TelegramService) handleWebhookCommand(message *tgbotapi.Message) error 
 		return err
 	}
 
-	// Create webhook URL
+	// Create GitHub webhook URL
 	webhookURL := fmt.Sprintf("%s/github/%s", s.baseURL, url.PathEscape(encryptedChatID))
 
 	// Create response message
@@ -126,6 +133,30 @@ func (s *TelegramService) handleWebhookCommand(message *tgbotapi.Message) error 
 		"4. Set Content type to 'application/json'\n" +
 		"5. Select the events you want to receive\n" +
 		"6. Click 'Add webhook'\n\n" +
+		"You'll receive a confirmation message when the webhook is set up correctly."
+
+	return s.SendMessage(message.Chat.ID, text)
+}
+
+func (s *TelegramService) handleGitLabCommand(message *tgbotapi.Message) error {
+	// Encrypt chat ID
+	chatIDStr := fmt.Sprintf("%d", message.Chat.ID)
+	encryptedChatID, err := s.cryptoSvc.EncryptChatID(chatIDStr)
+	if err != nil {
+		return err
+	}
+
+	// Create GitLab webhook URL
+	webhookURL := fmt.Sprintf("%s/gitlab/%s", s.baseURL, url.PathEscape(encryptedChatID))
+
+	// Create response message
+	text := fmt.Sprintf("🔗 *Your GitLab Webhook URL*\n\n`%s`\n\n", webhookURL) +
+		"*How to set up:*\n\n" +
+		"1. Go to your GitLab project\n" +
+		"2. Click on Settings > Webhooks\n" +
+		"3. Paste the URL above in the 'URL' field\n" +
+		"4. Select the events you want to receive\n" +
+		"5. Click 'Add webhook'\n\n" +
 		"You'll receive a confirmation message when the webhook is set up correctly."
 
 	return s.SendMessage(message.Chat.ID, text)

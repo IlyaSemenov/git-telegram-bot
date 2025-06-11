@@ -1,6 +1,6 @@
 # Running Locally
 
-This guide explains how to run the GitHub-Telegram Bot locally for development and testing.
+This guide explains how to run the Git-Telegram Bot locally for development and testing.
 
 ## Prerequisites
 
@@ -77,18 +77,18 @@ If you encounter errors about missing dependencies or `go.sum` entries, run `go 
 ## Step 5: Test the Bot
 
 1. Add your bot to a Telegram group or send a direct message to it
-2. The bot will provide a unique webhook URL for GitHub
-3. Add this URL to your GitHub repository's webhook settings for testing
+2. Use the `/github` or `/gitlab` command to get a unique webhook URL
+3. Add this URL to your repository's webhook settings for testing
 
 ## Debugging
 
 The bot logs information to the console, which can help with debugging.
 
-If you're having issues with GitHub webhooks, check:
+If you're having issues with webhooks, check:
 
 1. The tunnel console for incoming requests
 2. The bot's console output for any errors
-3. GitHub's webhook delivery page for request/response details
+3. GitHub/GitLab's webhook delivery page for request/response details
 
 ## Local Development Tips
 

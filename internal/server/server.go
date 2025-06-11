@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"github-telegram-bot/internal/config"
-	"github-telegram-bot/internal/handlers"
-	"github-telegram-bot/internal/services"
+	"git-telegram-bot/internal/config"
+	"git-telegram-bot/internal/handlers"
+	"git-telegram-bot/internal/services"
 
 	"github.com/gorilla/mux"
 )
@@ -27,9 +27,11 @@ func New() (*Server, error) {
 	}
 
 	githubSvc := services.NewGitHubService()
+	gitlabSvc := services.NewGitLabService()
 
 	// Initialize handlers
 	githubHandler := handlers.NewGitHubHandler(cryptoSvc, telegramSvc, githubSvc)
+	gitlabHandler := handlers.NewGitLabHandler(cryptoSvc, telegramSvc, gitlabSvc)
 	telegramHandler := handlers.NewTelegramHandler(telegramSvc)
 
 	// Set up router
@@ -37,6 +39,9 @@ func New() (*Server, error) {
 
 	// GitHub webhook endpoint
 	router.HandleFunc("/github/{chatID}", githubHandler.HandleWebhook).Methods("POST")
+
+	// GitLab webhook endpoint
+	router.HandleFunc("/gitlab/{chatID}", gitlabHandler.HandleWebhook).Methods("POST")
 
 	// Telegram webhook endpoint
 	router.HandleFunc("/telegram/webhook", telegramHandler.HandleWebhook).Methods("POST")

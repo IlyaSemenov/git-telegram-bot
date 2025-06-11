@@ -33,5 +33,5 @@ jobs:
       - name: Update Lambda function
         run: |
           aws lambda update-function-code \
-            --function-name github-telegram-bot \
+            --function-name git-telegram-bot \
             --zip-file fileb://lambda-package.zip

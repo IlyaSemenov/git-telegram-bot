@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
-	"github-telegram-bot/internal/config"
-	"github-telegram-bot/internal/server"
+	"git-telegram-bot/internal/config"
+	"git-telegram-bot/internal/server"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"

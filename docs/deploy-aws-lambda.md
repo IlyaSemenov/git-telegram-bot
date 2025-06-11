@@ -1,6 +1,6 @@
 # Deploying to AWS Lambda
 
-This guide explains how to deploy the GitHub-Telegram Bot to AWS Lambda using the AWS CLI.
+This guide explains how to deploy the Git-Telegram Bot to AWS Lambda using the AWS CLI.
 
 ## Prerequisites
 
@@ -31,7 +31,7 @@ Create an IAM role that allows Lambda to access other AWS services:
 
 ```bash
 LAMBDA_ROLE_ARN=$(aws iam create-role \
-  --role-name github-telegram-bot-role \
+  --role-name git-telegram-bot-role \
   --assume-role-policy-document '{
     "Version": "2012-10-17",
     "Statement": [
@@ -51,27 +51,27 @@ echo "Lambda Role ARN: $LAMBDA_ROLE_ARN"
 
 # Attach the necessary policies
 aws iam attach-role-policy \
-  --role-name github-telegram-bot-role \
+  --role-name git-telegram-bot-role \
   --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 
 # Create a custom policy to allow the Lambda function to discover its own URL
 aws iam create-policy \
-  --policy-name github-telegram-bot-url-policy \
+  --policy-name git-telegram-bot-url-policy \
   --policy-document '{
     "Version": "2012-10-17",
     "Statement": [
       {
         "Effect": "Allow",
         "Action": "lambda:GetFunctionUrlConfig",
-        "Resource": "arn:aws:lambda:*:*:function:github-telegram-bot"
+        "Resource": "arn:aws:lambda:*:*:function:git-telegram-bot"
       }
     ]
   }'
 
 # Attach the custom policy to the role
 aws iam attach-role-policy \
-  --role-name github-telegram-bot-role \
-  --policy-arn $(aws iam list-policies --query 'Policies[?PolicyName==`github-telegram-bot-url-policy`].Arn' --output text)
+  --role-name git-telegram-bot-role \
+  --policy-arn $(aws iam list-policies --query 'Policies[?PolicyName==`git-telegram-bot-url-policy`].Arn' --output text)
 ```
 
 ## Step 3: Build and Deploy the Lambda Function
@@ -94,13 +94,13 @@ Create a function URL to expose your Lambda function:
 
 ```bash
 aws lambda create-function-url-config \
-  --function-name github-telegram-bot \
+  --function-name git-telegram-bot \
   --auth-type NONE \
   --invoke-mode BUFFERED
 
 # Add permission to allow public access to the function URL
 aws lambda add-permission \
-  --function-name github-telegram-bot \
+  --function-name git-telegram-bot \
   --action lambda:InvokeFunctionUrl \
   --principal "*" \
   --function-url-auth-type "NONE" \
@@ -146,7 +146,7 @@ aws iam create-policy \
       {
         "Effect": "Allow",
         "Action": "lambda:UpdateFunctionCode",
-        "Resource": "arn:aws:lambda:*:*:function:github-telegram-bot"
+        "Resource": "arn:aws:lambda:*:*:function:git-telegram-bot"
       }
     ]
   }'
@@ -183,5 +183,5 @@ Now that you've configured the AWS credentials in GitHub Secrets, automatic depl
 If you encounter issues with the bot, you can check the CloudWatch logs for the Lambda function. The following command will tail the logs and show you the most recent events:
 
 ```bash
-aws logs tail /aws/lambda/github-telegram-bot --follow
+aws logs tail /aws/lambda/git-telegram-bot --follow
 ```

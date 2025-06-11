@@ -16,7 +16,7 @@ build-lambda:
 # Deploy to AWS Lambda
 deploy: build-lambda
 	aws lambda create-function \
-		--function-name github-telegram-bot \
+		--function-name git-telegram-bot \
 		--runtime provided.al2 \
 		--handler bootstrap \
 		--zip-file fileb://bin/function.zip \
@@ -28,13 +28,13 @@ deploy: build-lambda
 # Update existing Lambda function
 update: build-lambda
 	aws lambda update-function-code \
-		--function-name github-telegram-bot \
+		--function-name git-telegram-bot \
 		--zip-file fileb://bin/function.zip
 
 # Update environment variables
 update-env:
 	aws lambda update-function-configuration \
-		--function-name github-telegram-bot \
+		--function-name git-telegram-bot \
 		--environment Variables="{TELEGRAM_BOT_TOKEN=$(TELEGRAM_BOT_TOKEN),ENCRYPTION_KEY=$(ENCRYPTION_KEY)}"
 
 # Run linter
