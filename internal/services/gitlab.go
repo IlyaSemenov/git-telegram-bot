@@ -59,12 +59,13 @@ func (s *GitLabService) handlePushEvent(payload []byte) (string, error) {
 	var message strings.Builder
 
 	message.WriteString(fmt.Sprintf(
-		"🚀 *%s* pushed to [%s](%s) (branch `%s`):\n\n",
+		"🚀 *%s* pushed to [%s](%s) (branch `%s`)",
 		event.UserName, event.Project.Name, event.Project.WebURL, branch,
 	))
 
 	// Add commit information
 	if len(event.Commits) > 0 {
+		message.WriteString(":\n\n")
 		for _, commit := range event.Commits {
 			message.WriteString(fmt.Sprintf("✅ *%s*: [%s](%s)\n",
 				commit.Author.Name, strings.TrimSpace(commit.Message), commit.URL))
@@ -129,7 +130,7 @@ func (s *GitLabService) handlePipelineEvent(payload []byte) (string, error) {
 		emoji = "ℹ️"
 	}
 
-	message.WriteString(fmt.Sprintf("%s Pipeline %s: [%s](%s) — [Pipeline #%d](%s) (branch `%s`):\n\n",
+	message.WriteString(fmt.Sprintf("%s Pipeline %s: [%s](%s) — [Pipeline #%d](%s) (branch `%s`)",
 		emoji, event.ObjectAttributes.Status,
 		event.Project.Name, event.Project.WebURL,
 		event.ObjectAttributes.ID, event.ObjectAttributes.WebURL,
@@ -138,6 +139,7 @@ func (s *GitLabService) handlePipelineEvent(payload []byte) (string, error) {
 
 	// Add build information
 	if len(event.Builds) > 0 {
+		message.WriteString(":\n\n")
 		for _, build := range event.Builds {
 			// Add emoji based on build status
 			var buildEmoji string

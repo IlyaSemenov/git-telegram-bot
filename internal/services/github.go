@@ -90,12 +90,13 @@ func (s *GitHubService) handlePushEvent(payload []byte, branchFilter string) (st
 	}
 
 	message.WriteString(fmt.Sprintf(
-		"🚀 *%s* %s to [%s](%s) (branch `%s`):\n\n",
+		"🚀 *%s* %s to [%s](%s) (branch `%s`)",
 		event.Pusher.Name, pushVerb, event.Repository.FullName, event.Repository.HTMLURL, branch,
 	))
 
 	// Add commit information
 	if len(event.Commits) > 0 {
+		message.WriteString(":\n\n")
 		for _, commit := range event.Commits {
 			message.WriteString(fmt.Sprintf("✅ *%s*: [%s](%s)\n",
 				commit.Author.Name, commit.Message, commit.URL))
