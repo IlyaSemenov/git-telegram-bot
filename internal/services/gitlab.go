@@ -82,7 +82,7 @@ func (s *GitLabService) handlePipelineEvent(payload []byte) (string, error) {
 			Ref            string `json:"ref"`
 			Status         string `json:"status"`
 			DetailedStatus string `json:"detailed_status"`
-			WebURL         string `json:"web_url"`
+			URL            string `json:"url"`
 			Duration       int    `json:"duration"`
 		} `json:"object_attributes"`
 		Project struct {
@@ -99,7 +99,6 @@ func (s *GitLabService) handlePipelineEvent(payload []byte) (string, error) {
 			Name     string  `json:"name"`
 			Status   string  `json:"status"`
 			Duration float64 `json:"duration"`
-			WebURL   string  `json:"web_url"`
 		} `json:"builds"`
 	}
 
@@ -133,7 +132,7 @@ func (s *GitLabService) handlePipelineEvent(payload []byte) (string, error) {
 	message.WriteString(fmt.Sprintf("%s Pipeline %s: [%s](%s) — [Pipeline #%d](%s) (branch `%s`)",
 		emoji, event.ObjectAttributes.Status,
 		event.Project.Name, event.Project.WebURL,
-		event.ObjectAttributes.ID, event.ObjectAttributes.WebURL,
+		event.ObjectAttributes.ID, event.ObjectAttributes.URL,
 		event.ObjectAttributes.Ref,
 	))
 
