@@ -110,7 +110,7 @@ func (s *GitHubService) handlePushEvent(payload []byte, branchFilter string) (st
 				"👉 <b>%s</b>: <a href=\"%s\">%s</a>\n",
 				html.EscapeString(commit.Author.Name),
 				commit.URL,
-				html.EscapeString(commit.Message),
+				html.EscapeString(strings.TrimSpace(commit.Message)),
 			))
 		}
 	}
