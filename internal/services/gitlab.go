@@ -72,7 +72,7 @@ func (s *GitLabService) handlePushEvent(payload []byte) (string, error) {
 		message.WriteString(":\n\n")
 		for _, commit := range event.Commits {
 			message.WriteString(fmt.Sprintf(
-				"<b>%s</b>: <a href=\"%s\">%s</a>\n",
+				"👉 <b>%s</b>: <a href=\"%s\">%s</a>\n",
 				html.EscapeString(commit.Author.Name),
 				commit.URL,
 				html.EscapeString(strings.TrimSpace(commit.Message)),
