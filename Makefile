@@ -10,7 +10,8 @@ clean:
 
 # Build for AWS Lambda
 build-lambda:
-	GOOS=linux GOARCH=arm64 go build -o bin/bootstrap ./cmd/bot
+	# For CGO, see https://github.com/aws/aws-lambda-go/issues/340
+	GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o bin/bootstrap ./cmd/bot
 	cd bin && zip function.zip bootstrap
 
 # Initialize Terraform

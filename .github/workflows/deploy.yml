@@ -18,10 +18,7 @@ jobs:
           go-version: '1.24'
 
       - name: Build Lambda package
-        run: |
-          # For CGO, see https://github.com/aws/aws-lambda-go/issues/340
-          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o bootstrap ./cmd/bot
-          zip lambda-package.zip bootstrap
+        run: make build-lambda
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -30,16 +27,5 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Update Lambda function
-        run: |
-          aws lambda update-function-code \
-            --function-name git-telegram-bot \
-            --zip-file fileb://lambda-package.zip
-
-      - name: Initialize Lambda function
-        run: |
-          # Get the Lambda function URL
-          LAMBDA_URL=$(aws lambda get-function-url-config --function-name git-telegram-bot --query "FunctionUrl" --output text)
-          LAMBDA_INIT_URL=${LAMBDA_URL}init
-          echo "Initializing bot at $LAMBDA_INIT_URL"
-          curl -s "$LAMBDA_INIT_URL"
+      - name: Update Lambda function and initialize
+        run: make update
