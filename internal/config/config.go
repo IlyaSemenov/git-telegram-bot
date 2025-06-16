@@ -16,7 +16,7 @@ var Global *Config
 
 type Config struct {
 	TelegramBotToken string
-	EncryptionKey    string
+	SecretKey        string
 	BaseURL          string
 	IsLambda         bool
 }
@@ -73,7 +73,7 @@ func Initialize() error {
 
 	Global = &Config{
 		TelegramBotToken: os.Getenv("TELEGRAM_BOT_TOKEN"),
-		EncryptionKey:    os.Getenv("ENCRYPTION_KEY"),
+		SecretKey:        os.Getenv("SECRET_KEY"),
 		BaseURL:          baseURL,
 		IsLambda:         isLambda,
 	}

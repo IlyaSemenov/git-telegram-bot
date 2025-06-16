@@ -44,11 +44,11 @@ Create a `.env` file in the root directory of the project based on the `.env.exa
 
 ```
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-ENCRYPTION_KEY=your_random_encryption_key
+SECRET_KEY=your_random_secret_key
 BASE_URL=https://your-tunnel-url  # Use the URL from your tunnel
 ```
 
-To generate a random encryption key:
+To generate a random secret key:
 
 ```bash
 openssl rand -base64 32

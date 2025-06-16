@@ -14,9 +14,9 @@ type CryptoService struct {
 	key []byte
 }
 
-func NewCryptoService(encryptionKey string) *CryptoService {
+func NewCryptoService(secretKey string) *CryptoService {
 	// Create a fixed-size key using SHA-256
-	hash := sha256.Sum256([]byte(encryptionKey))
+	hash := sha256.Sum256([]byte(secretKey))
 	return &CryptoService{
 		key: hash[:],
 	}

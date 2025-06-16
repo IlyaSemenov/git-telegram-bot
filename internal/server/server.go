@@ -19,7 +19,7 @@ type Server struct {
 
 func New() (*Server, error) {
 	// Initialize services
-	cryptoSvc := services.NewCryptoService(config.Global.EncryptionKey)
+	cryptoSvc := services.NewCryptoService(config.Global.SecretKey)
 
 	telegramSvc, err := services.NewTelegramService(config.Global.TelegramBotToken, cryptoSvc, config.Global.BaseURL)
 	if err != nil {

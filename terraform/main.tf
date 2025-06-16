@@ -2,8 +2,8 @@ provider "aws" {
   region = var.aws_region
 }
 
-# Random encryption key
-resource "random_password" "encryption_key" {
+# Random secret key
+resource "random_password" "secret_key" {
   length  = 32
   special = true
 }
@@ -73,7 +73,7 @@ resource "aws_lambda_function" "git_telegram_bot" {
   environment {
     variables = {
       TELEGRAM_BOT_TOKEN = var.telegram_bot_token
-      ENCRYPTION_KEY     = random_password.encryption_key.result
+      SECRET_KEY         = random_password.secret_key.result
     }
   }
 

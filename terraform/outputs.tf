@@ -8,9 +8,9 @@ output "cloudwatch_log_group" {
   value       = aws_cloudwatch_log_group.lambda_logs.name
 }
 
-output "encryption_key" {
-  description = "Generated encryption key (sensitive)"
-  value       = random_password.encryption_key.result
+output "secret_key" {
+  description = "Generated secret key (sensitive)"
+  value       = random_password.secret_key.result
   sensitive   = true
 }
 
