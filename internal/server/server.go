@@ -56,6 +56,17 @@ func New() (*Server, error) {
 
 	if config.Global.IsLambda {
 		router.HandleFunc("/init", func(w http.ResponseWriter, r *http.Request) {
+			// Validate secret key from header
+			secretKey := r.Header.Get("secret-key")
+			if secretKey != config.Global.SecretKey {
+				log.Printf("Invalid secret key provided for init endpoint")
+				w.WriteHeader(http.StatusUnauthorized)
+				if _, writeErr := w.Write([]byte("Unauthorized: Invalid secret key")); writeErr != nil {
+					log.Printf("Failed to write response: %v", writeErr)
+				}
+				return
+			}
+
 			if err := telegramSvc.Init(); err != nil {
 				log.Printf("Failed to init Telegram bot: %v", err)
 				w.WriteHeader(http.StatusInternalServerError)

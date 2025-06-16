@@ -35,11 +35,12 @@ update: build-lambda
 		--function-name git-telegram-bot \
 		--zip-file fileb://bin/function.zip \
 		--architectures arm64
-	# Get the Lambda function URL
+	# Get the Lambda function URL and secret key from AWS
 	LAMBDA_URL=$$(aws lambda get-function-url-config --function-name git-telegram-bot --query "FunctionUrl" --output text) && \
+	SECRET_KEY=$$(aws lambda get-function --function-name git-telegram-bot --query "Configuration.Environment.Variables.SECRET_KEY" --output text) && \
 	LAMBDA_INIT_URL=$${LAMBDA_URL}init && \
 	echo "Initializing bot at $$LAMBDA_INIT_URL" && \
-	curl -s "$$LAMBDA_INIT_URL"
+	curl -s -H "secret-key: $$SECRET_KEY" "$$LAMBDA_INIT_URL"
 
 # Update environment variables (use after terraform apply)
 update-env:
