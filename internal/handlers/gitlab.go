@@ -7,17 +7,18 @@ import (
 	"net/http"
 
 	"git-telegram-bot/internal/services"
+	"git-telegram-bot/internal/services/telegram"
 
 	"github.com/gorilla/mux"
 )
 
 type GitLabHandler struct {
 	cryptoSvc   *services.CryptoService
-	telegramSvc *services.TelegramService
+	telegramSvc *telegram.GitLabTelegramService
 	gitlabSvc   *services.GitLabService
 }
 
-func NewGitLabHandler(cryptoSvc *services.CryptoService, telegramSvc *services.TelegramService, gitlabSvc *services.GitLabService) *GitLabHandler {
+func NewGitLabHandler(cryptoSvc *services.CryptoService, telegramSvc *telegram.GitLabTelegramService, gitlabSvc *services.GitLabService) *GitLabHandler {
 	return &GitLabHandler{
 		cryptoSvc:   cryptoSvc,
 		telegramSvc: telegramSvc,

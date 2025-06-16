@@ -15,10 +15,11 @@ import (
 var Global *Config
 
 type Config struct {
-	TelegramBotToken string
-	SecretKey        string
-	BaseURL          string
-	IsLambda         bool
+	GitHubTelegramBotToken string
+	GitLabTelegramBotToken string
+	SecretKey              string
+	BaseURL                string
+	IsLambda               bool
 }
 
 func GetLambdaURL() (string, error) {
@@ -71,11 +72,27 @@ func Initialize() error {
 	// Ensure BaseURL doesn't end with a slash
 	baseURL = strings.TrimSuffix(baseURL, "/")
 
+	githubTelegramBotToken := os.Getenv("GITHUB_TELEGRAM_BOT_TOKEN")
+	if githubTelegramBotToken == "" {
+		return fmt.Errorf("GITHUB_TELEGRAM_BOT_TOKEN environment variable is missing")
+	}
+
+	gitlabTelegramBotToken := os.Getenv("GITLAB_TELEGRAM_BOT_TOKEN")
+	if gitlabTelegramBotToken == "" {
+		return fmt.Errorf("GITLAB_TELEGRAM_BOT_TOKEN environment variable is missing")
+	}
+
+	secretKey := os.Getenv("SECRET_KEY")
+	if secretKey == "" {
+		return fmt.Errorf("SECRET_KEY environment variable is missing")
+	}
+
 	Global = &Config{
-		TelegramBotToken: os.Getenv("TELEGRAM_BOT_TOKEN"),
-		SecretKey:        os.Getenv("SECRET_KEY"),
-		BaseURL:          baseURL,
-		IsLambda:         isLambda,
+		GitHubTelegramBotToken: githubTelegramBotToken,
+		GitLabTelegramBotToken: gitlabTelegramBotToken,
+		SecretKey:              secretKey,
+		BaseURL:                baseURL,
+		IsLambda:               isLambda,
 	}
 
 	return nil

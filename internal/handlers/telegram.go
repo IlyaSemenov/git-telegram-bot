@@ -5,20 +5,25 @@ import (
 	"io"
 	"log"
 	"net/http"
-
-	"git-telegram-bot/internal/services"
 )
 
+// TelegramHandler handles Telegram webhook requests
 type TelegramHandler struct {
-	telegramSvc *services.TelegramService
+	telegramSvc interface {
+		ProcessUpdate(updateJSON []byte) error
+	}
 }
 
-func NewTelegramHandler(telegramSvc *services.TelegramService) *TelegramHandler {
+// NewTelegramHandler creates a new Telegram handler
+func NewTelegramHandler(telegramSvc interface {
+	ProcessUpdate(updateJSON []byte) error
+}) *TelegramHandler {
 	return &TelegramHandler{
 		telegramSvc: telegramSvc,
 	}
 }
 
+// HandleWebhook handles Telegram webhook requests
 func (h *TelegramHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	// Read request body
 	body, err := io.ReadAll(r.Body)

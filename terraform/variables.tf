@@ -4,8 +4,14 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
-variable "telegram_bot_token" {
-  description = "Telegram Bot Token from BotFather"
+variable "github_telegram_bot_token" {
+  description = "GitHub Telegram Bot Token from BotFather"
+  type        = string
+  sensitive   = true
+}
+
+variable "gitlab_telegram_bot_token" {
+  description = "GitLab Telegram Bot Token from BotFather"
   type        = string
   sensitive   = true
 }

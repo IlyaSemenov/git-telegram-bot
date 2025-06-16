@@ -8,31 +8,39 @@ import (
 	"git-telegram-bot/internal/config"
 	"git-telegram-bot/internal/handlers"
 	"git-telegram-bot/internal/services"
+	"git-telegram-bot/internal/services/telegram"
 
 	"github.com/gorilla/mux"
 )
 
 type Server struct {
-	router      *mux.Router
-	telegramSvc *services.TelegramService
+	router *mux.Router
 }
 
 func New() (*Server, error) {
 	// Initialize services
 	cryptoSvc := services.NewCryptoService(config.Global.SecretKey)
 
-	telegramSvc, err := services.NewTelegramService(config.Global.TelegramBotToken, cryptoSvc, config.Global.BaseURL)
+	// Initialize GitHub Telegram service
+	githubTelegramSvc, err := telegram.NewGitHubTelegramService(cryptoSvc)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to initialize GitHub Telegram service: %w", err)
+	}
+
+	// Initialize GitLab Telegram service
+	gitlabTelegramSvc, err := telegram.NewGitLabTelegramService(cryptoSvc)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to initialize GitLab Telegram service: %w", err)
 	}
 
 	githubSvc := services.NewGitHubService()
 	gitlabSvc := services.NewGitLabService()
 
 	// Initialize handlers
-	githubHandler := handlers.NewGitHubHandler(cryptoSvc, telegramSvc, githubSvc)
-	gitlabHandler := handlers.NewGitLabHandler(cryptoSvc, telegramSvc, gitlabSvc)
-	telegramHandler := handlers.NewTelegramHandler(telegramSvc)
+	githubHandler := handlers.NewGitHubHandler(cryptoSvc, githubTelegramSvc, githubSvc)
+	gitlabHandler := handlers.NewGitLabHandler(cryptoSvc, gitlabTelegramSvc, gitlabSvc)
+	githubTelegramHandler := handlers.NewTelegramHandler(githubTelegramSvc)
+	gitlabTelegramHandler := handlers.NewTelegramHandler(gitlabTelegramSvc)
 
 	// Set up router
 	router := mux.NewRouter()
@@ -43,8 +51,9 @@ func New() (*Server, error) {
 	// GitLab webhook endpoint
 	router.HandleFunc("/gitlab/{chatID}", gitlabHandler.HandleWebhook).Methods("POST")
 
-	// Telegram webhook endpoint
-	router.HandleFunc("/telegram/webhook", telegramHandler.HandleWebhook).Methods("POST")
+	// Telegram webhook endpoints
+	router.HandleFunc("/telegram/webhook/github", githubTelegramHandler.HandleWebhook).Methods("POST")
+	router.HandleFunc("/telegram/webhook/gitlab", gitlabTelegramHandler.HandleWebhook).Methods("POST")
 
 	// Health check endpoint
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -53,6 +62,17 @@ func New() (*Server, error) {
 			log.Printf("Failed to write response: %v", err)
 		}
 	}).Methods("GET")
+
+	// Initialize function for Telegram bots
+	initBots := func() error {
+		if err := githubTelegramSvc.Init(); err != nil {
+			return fmt.Errorf("Failed to init GitHub Telegram bot: %v", err)
+		}
+		if err := gitlabTelegramSvc.Init(); err != nil {
+			return fmt.Errorf("Failed to init GitLab Telegram bot: %v", err)
+		}
+		return nil
+	}
 
 	if config.Global.IsLambda {
 		router.HandleFunc("/init", func(w http.ResponseWriter, r *http.Request) {
@@ -67,28 +87,28 @@ func New() (*Server, error) {
 				return
 			}
 
-			if err := telegramSvc.Init(); err != nil {
-				log.Printf("Failed to init Telegram bot: %v", err)
+			if err := initBots(); err != nil {
+				log.Printf("%v", err)
 				w.WriteHeader(http.StatusInternalServerError)
-				if _, writeErr := w.Write(fmt.Appendf(nil, "Error: %v", err)); writeErr != nil {
+				if _, writeErr := w.Write([]byte(err.Error())); writeErr != nil {
 					log.Printf("Failed to write response: %v", writeErr)
 				}
 				return
 			}
+
 			w.WriteHeader(http.StatusOK)
-			if _, err := w.Write([]byte("Telegram bot successfully initialized.")); err != nil {
+			if _, err := w.Write([]byte("Telegram bots successfully initialized.")); err != nil {
 				log.Printf("Failed to write response: %v", err)
 			}
 		}).Methods("GET")
 	} else {
-		if err := telegramSvc.Init(); err != nil {
-			return nil, fmt.Errorf("Failed to init Telegram bot: %v", err)
+		if err := initBots(); err != nil {
+			return nil, err
 		}
 	}
 
 	return &Server{
-		router:      router,
-		telegramSvc: telegramSvc,
+		router: router,
 	}, nil
 }
 

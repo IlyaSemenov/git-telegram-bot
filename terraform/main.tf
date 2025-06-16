@@ -72,8 +72,9 @@ resource "aws_lambda_function" "git_telegram_bot" {
 
   environment {
     variables = {
-      TELEGRAM_BOT_TOKEN = var.telegram_bot_token
-      SECRET_KEY         = random_password.secret_key.result
+      GITHUB_TELEGRAM_BOT_TOKEN = var.github_telegram_bot_token
+      GITLAB_TELEGRAM_BOT_TOKEN = var.gitlab_telegram_bot_token
+      SECRET_KEY                = random_password.secret_key.result
     }
   }
 
