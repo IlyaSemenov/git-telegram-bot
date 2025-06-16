@@ -30,11 +30,6 @@ func init() {
 		log.Fatalf("Failed to create server: %v", err)
 	}
 
-	// Setup Telegram webhook
-	if err := srv.SetupTelegramBot(); err != nil {
-		log.Fatalf("Failed to set up Telegram: %v", err)
-	}
-
 	// Create Lambda adapter if in Lambda mode
 	if config.Global.IsLambda {
 		muxAdapter = muxadapter.NewV2(srv.Router())

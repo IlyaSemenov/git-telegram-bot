@@ -54,6 +54,27 @@ func New() (*Server, error) {
 		}
 	}).Methods("GET")
 
+	if config.Global.IsLambda {
+		router.HandleFunc("/init", func(w http.ResponseWriter, r *http.Request) {
+			if err := telegramSvc.Init(); err != nil {
+				log.Printf("Failed to init Telegram bot: %v", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				if _, writeErr := w.Write(fmt.Appendf(nil, "Error: %v", err)); writeErr != nil {
+					log.Printf("Failed to write response: %v", writeErr)
+				}
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			if _, err := w.Write([]byte("Telegram bot successfully initialized.")); err != nil {
+				log.Printf("Failed to write response: %v", err)
+			}
+		}).Methods("GET")
+	} else {
+		if err := telegramSvc.Init(); err != nil {
+			return nil, fmt.Errorf("Failed to init Telegram bot: %v", err)
+		}
+	}
+
 	return &Server{
 		router:      router,
 		telegramSvc: telegramSvc,
@@ -66,21 +87,4 @@ func (s *Server) Router() *mux.Router {
 
 func (s *Server) ListenAndServe() error {
 	return http.ListenAndServe(":8080", s.router)
-}
-
-func (s *Server) SetupTelegramBot() error {
-	// Set up webhook
-	webhookURL := config.Global.BaseURL + "/telegram/webhook"
-	if err := s.telegramSvc.SetWebhook(webhookURL); err != nil {
-		return fmt.Errorf("Failed to set up Telegram webhook at %s: %w", webhookURL, err)
-	} else {
-		log.Printf("Successfully set up Telegram webhook at %s", webhookURL)
-	}
-
-	// Set up commands
-	if err := s.telegramSvc.SetCommands(); err != nil {
-		return fmt.Errorf("Failed to set Telegram commands: %w", err)
-	}
-
-	return nil
 }

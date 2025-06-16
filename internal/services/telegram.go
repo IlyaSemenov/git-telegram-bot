@@ -3,7 +3,10 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/url"
+
+	"git-telegram-bot/internal/config"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -25,6 +28,25 @@ func NewTelegramService(token string, cryptoSvc *CryptoService, baseURL string) 
 		cryptoSvc: cryptoSvc,
 		baseURL:   baseURL,
 	}, nil
+}
+
+func (s *TelegramService) Init() error {
+	log.Printf("Discovered self as @%s", s.bot.Self.UserName)
+
+	// Set up webhook
+	webhookURL := config.Global.BaseURL + "/telegram/webhook"
+	if err := s.SetWebhook(webhookURL); err != nil {
+		return fmt.Errorf("Failed to set up Telegram webhook at %s: %w", webhookURL, err)
+	} else {
+		log.Printf("Successfully set up Telegram webhook at %s", webhookURL)
+	}
+
+	// Set up commands
+	if err := s.SetCommands(); err != nil {
+		return fmt.Errorf("Failed to set Telegram commands: %w", err)
+	}
+
+	return nil
 }
 
 func (s *TelegramService) SetWebhook(webhookURL string) error {

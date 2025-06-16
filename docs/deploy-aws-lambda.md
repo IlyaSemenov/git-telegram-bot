@@ -55,6 +55,11 @@ Build and deploy the function using the Makefile:
 make update
 ```
 
+This command will:
+1. Build the Lambda function
+2. Update the Lambda function code
+3. Initialize the bot by calling the `/init` endpoint to set up the Telegram webhook
+
 ## Step 4: Test the Bot
 
 1. Add your bot to a Telegram group

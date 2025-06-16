@@ -124,7 +124,8 @@ resource "aws_iam_policy" "github_actions_policy" {
         Effect = "Allow"
         Action = [
           "lambda:UpdateFunctionCode",
-          "lambda:GetFunction"
+          "lambda:GetFunction",
+          "lambda:GetFunctionUrlConfig"
         ]
         Resource = aws_lambda_function.git_telegram_bot.arn
       }
