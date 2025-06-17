@@ -123,6 +123,33 @@ make logs
 
 You can also view logs in the AWS Console under CloudWatch > Log Groups.
 
+## Using Custom Domain Name
+
+To use a custom domain name, set it in the `terraform.tfvars` file.
+
+Initially, running `make terraform-apply` will fail due to missing SSL certificate:
+
+```log
+InvalidViewerCertificate: The specified SSL certificate doesn't exist, isn't in the us-east-1 region, isn't valid, or doesn't include a valid certificate chain.
+
+Check the certificate details:
+
+```bash
+CERTIFICATE_ARN=$(aws acm list-certificates --region us-east-1 \
+  --query "CertificateSummaryList[?DomainName=='example.com'].CertificateArn" \
+  --output text)
+aws acm describe-certificate \
+  --certificate-arn $CERTIFICATE_ARN \
+  --query "Certificate.DomainValidationOptions" \
+  --output json
+```
+
+Under `ResourceRecord`, you will see the DNS record that needs to be created.
+
+Once the certificate validation succeeds, proceed with `make terraform-apply`.
+
+Once the bot is deployed, you can update the DNS record to point to the CloudFront distribution's domain name (in the Terraform output `cloudfront_domain_name`).
+
 ## Publishing Multiple Versions
 
 You can publish multiple versions of your bot using different Terraform workspaces.
