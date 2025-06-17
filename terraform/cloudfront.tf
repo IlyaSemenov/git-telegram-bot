@@ -11,7 +11,7 @@ resource "aws_acm_certificate" "cert" {
 }
 
 resource "aws_cloudfront_origin_request_policy" "lambda_webhook_headers" {
-  name    = "lambda-webhook-headers-policy"
+  name    = "${local.function_name}-webhook-headers-policy"
   comment = "Forwards webhook headers to Lambda"
 
   cookies_config {

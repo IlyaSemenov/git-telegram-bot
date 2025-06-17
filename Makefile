@@ -25,11 +25,11 @@ terraform-init:
 
 # Apply Terraform configuration
 terraform-apply:
-	cd terraform && TF_WORKSPACE=$(TF_WORKSPACE) terraform apply
+	cd terraform && TF_WORKSPACE=$(TF_WORKSPACE) terraform apply -var-file=$(TF_WORKSPACE).tfvars
 
 # Destroy Terraform resources
 terraform-destroy:
-	cd terraform && TF_WORKSPACE=$(TF_WORKSPACE) terraform destroy
+	cd terraform && TF_WORKSPACE=$(TF_WORKSPACE) terraform destroy -var-file=$(TF_WORKSPACE).tfvars
 
 # Deploy to AWS Lambda using Terraform
 deploy: build-lambda terraform-apply
