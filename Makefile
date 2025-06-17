@@ -1,4 +1,9 @@
-.PHONY: build clean deploy lint build-lambda update update-env run dev terraform-init terraform-apply terraform-destroy
+.PHONY: build clean deploy deploy-staging lint build-lambda update update-staging update-env run dev terraform-init terraform-apply terraform-destroy
+
+# Environment variable defaults
+ENV ?= prod
+FUNCTION_NAME = $(if $(filter prod,$(ENV)),git-telegram-bot,git-telegram-bot-$(ENV))
+TF_WORKSPACE="$(if $(filter prod,$(ENV)),default,$(ENV))"
 
 # Build the application
 build:
@@ -20,31 +25,30 @@ terraform-init:
 
 # Apply Terraform configuration
 terraform-apply:
-	cd terraform && terraform apply
+	cd terraform && TF_WORKSPACE=$(TF_WORKSPACE) terraform apply
 
 # Destroy Terraform resources
 terraform-destroy:
-	cd terraform && terraform destroy
+	cd terraform && TF_WORKSPACE=$(TF_WORKSPACE) terraform destroy
 
 # Deploy to AWS Lambda using Terraform
 deploy: build-lambda terraform-apply
 
 # Update existing Lambda function
 update: build-lambda
-	aws lambda update-function-code \
-		--function-name git-telegram-bot \
+	echo aws lambda update-function-code \
+		--function-name $(FUNCTION_NAME) \
 		--zip-file fileb://bin/function.zip \
 		--architectures arm64
 	# Get the Lambda function URL and secret key from AWS
-	LAMBDA_URL=$$(aws lambda get-function-url-config --function-name git-telegram-bot --query "FunctionUrl" --output text) && \
-	SECRET_KEY=$$(aws lambda get-function --function-name git-telegram-bot --query "Configuration.Environment.Variables.SECRET_KEY" --output text) && \
+	LAMBDA_URL=$$(aws lambda get-function-url-config --function-name $(FUNCTION_NAME) --query "FunctionUrl" --output text) && \
+	SECRET_KEY=$$(aws lambda get-function --function-name $(FUNCTION_NAME) --query "Configuration.Environment.Variables.SECRET_KEY" --output text) && \
 	LAMBDA_INIT_URL=$${LAMBDA_URL}init && \
 	echo "Initializing bot at $$LAMBDA_INIT_URL" && \
 	curl -s -H "secret-key: $$SECRET_KEY" "$$LAMBDA_INIT_URL"
 
-# Update environment variables (use after terraform apply)
-update-env:
-	cd terraform && terraform apply -target=aws_lambda_function.git_telegram_bot
+logs:
+	aws logs tail /aws/lambda/$(FUNCTION_NAME) --follow
 
 # Run linter
 lint:

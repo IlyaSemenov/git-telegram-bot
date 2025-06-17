@@ -2,6 +2,10 @@ provider "aws" {
   region = var.aws_region
 }
 
+locals {
+  function_name = terraform.workspace == "default" ? "git-telegram-bot" : "git-telegram-bot-${terraform.workspace}"
+}
+
 # Random secret key
 resource "random_password" "secret_key" {
   length  = 32
@@ -10,7 +14,7 @@ resource "random_password" "secret_key" {
 
 # Lambda IAM Role
 resource "aws_iam_role" "lambda_role" {
-  name = "git-telegram-bot-role"
+  name = "${local.function_name}-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -34,7 +38,7 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
 
 # Custom policy to allow Lambda to discover its own URL
 resource "aws_iam_policy" "lambda_url_policy" {
-  name        = "git-telegram-bot-url-policy"
+  name        = "${local.function_name}-url-policy"
   description = "Allow Lambda to get its function URL configuration"
 
   policy = jsonencode({
@@ -43,7 +47,7 @@ resource "aws_iam_policy" "lambda_url_policy" {
       {
         Effect   = "Allow"
         Action   = "lambda:GetFunctionUrlConfig"
-        Resource = "arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:function:git-telegram-bot"
+        Resource = "arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:function:${local.function_name}"
       }
     ]
   })
@@ -60,7 +64,7 @@ data "aws_caller_identity" "current" {}
 
 # Lambda function
 resource "aws_lambda_function" "git_telegram_bot" {
-  function_name = "git-telegram-bot"
+  function_name = local.function_name
   role          = aws_iam_role.lambda_role.arn
   handler       = "bootstrap"
   runtime       = "provided.al2023"
@@ -104,17 +108,19 @@ resource "aws_lambda_permission" "function_url_permission" {
 
 # CloudWatch Log Group
 resource "aws_cloudwatch_log_group" "lambda_logs" {
-  name              = "/aws/lambda/git-telegram-bot"
+  name              = "/aws/lambda/${local.function_name}"
   retention_in_days = 14
 }
 
-# IAM User for GitHub Actions
+# IAM User for GitHub Actions (only for production)
 resource "aws_iam_user" "github_actions" {
-  name = "github-actions-git-telegram-bot"
+  count = terraform.workspace == "default" ? 1 : 0
+  name  = "github-actions-git-telegram-bot"
 }
 
-# IAM Policy for GitHub Actions
+# IAM Policy for GitHub Actions (only for production)
 resource "aws_iam_policy" "github_actions_policy" {
+  count       = terraform.workspace == "default" ? 1 : 0
   name        = "github-actions-git-telegram-bot-policy"
   description = "Policy for GitHub Actions to update Lambda code"
 
@@ -134,13 +140,15 @@ resource "aws_iam_policy" "github_actions_policy" {
   })
 }
 
-# Attach policy to IAM user
+# Attach policy to IAM user (only for production)
 resource "aws_iam_user_policy_attachment" "github_actions_policy_attachment" {
-  user       = aws_iam_user.github_actions.name
-  policy_arn = aws_iam_policy.github_actions_policy.arn
+  count      = terraform.workspace == "default" ? 1 : 0
+  user       = aws_iam_user.github_actions[0].name
+  policy_arn = aws_iam_policy.github_actions_policy[0].arn
 }
 
-# Access key for GitHub Actions
+# Access key for GitHub Actions (only for production)
 resource "aws_iam_access_key" "github_actions" {
-  user = aws_iam_user.github_actions.name
+  count = terraform.workspace == "default" ? 1 : 0
+  user  = aws_iam_user.github_actions[0].name
 }

@@ -16,11 +16,11 @@ output "secret_key" {
 
 output "github_actions_access_key" {
   description = "AWS Access Key ID for GitHub Actions"
-  value       = aws_iam_access_key.github_actions.id
+  value       = terraform.workspace == "default" ? aws_iam_access_key.github_actions[0].id : "Not created for ${terraform.workspace}"
 }
 
 output "github_actions_secret_key" {
   description = "AWS Secret Access Key for GitHub Actions (sensitive)"
-  value       = aws_iam_access_key.github_actions.secret
+  value       = terraform.workspace == "default" ? aws_iam_access_key.github_actions[0].secret : "Not created for ${terraform.workspace}"
   sensitive   = true
 }

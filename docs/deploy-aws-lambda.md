@@ -56,6 +56,7 @@ make update
 ```
 
 This command will:
+
 1. Build the Lambda function
 2. Update the Lambda function code
 3. Initialize the bot by calling the `/init` endpoint to set up the Telegram webhook
@@ -117,7 +118,27 @@ make terraform-destroy
 If you encounter issues with the bot, you can check the CloudWatch logs:
 
 ```bash
-aws logs tail /aws/lambda/git-telegram-bot --follow
+make logs
 ```
 
 You can also view logs in the AWS Console under CloudWatch > Log Groups.
+
+## Publishing Multiple Versions
+
+You can publish multiple versions of your bot using different Terraform workspaces.
+
+For example, to deploy a staging version of your bot:
+
+```bash
+make deploy ENV=staging
+```
+
+This will create a new Terraform workspace for the staging environment and deploy the bot there.
+
+Similarly, you can check the logs for the staging environment:
+
+```bash
+make logs ENV=staging
+```
+
+Make sure to use different Telegram bot tokens for multiple versions!
