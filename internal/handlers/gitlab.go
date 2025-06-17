@@ -13,29 +13,23 @@ import (
 )
 
 type GitLabHandler struct {
-	cryptoSvc   *services.CryptoService
 	telegramSvc *telegram.GitLabTelegramService
 	gitlabSvc   *services.GitLabService
 }
 
-func NewGitLabHandler(cryptoSvc *services.CryptoService, telegramSvc *telegram.GitLabTelegramService, gitlabSvc *services.GitLabService) *GitLabHandler {
+func NewGitLabHandler(telegramSvc *telegram.GitLabTelegramService, gitlabSvc *services.GitLabService) *GitLabHandler {
 	return &GitLabHandler{
-		cryptoSvc:   cryptoSvc,
 		telegramSvc: telegramSvc,
 		gitlabSvc:   gitlabSvc,
 	}
 }
 
 func (h *GitLabHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
-	// Get encrypted chat ID from URL
+	// Get chat ID from URL
 	vars := mux.Vars(r)
-	encryptedChatID := vars["chatID"]
-
-	// Decrypt chat ID
-	chatID, err := h.cryptoSvc.DecryptChatID(encryptedChatID)
+	chatID, err := telegram.ParseChatID(vars["chatID"])
 	if err != nil {
-		log.Printf("Failed to decrypt chat ID: %v", err)
-		http.Error(w, "Invalid chat ID", http.StatusBadRequest)
+		http.Error(w, "Failed to parse chatID from URL", http.StatusBadRequest)
 		return
 	}
 

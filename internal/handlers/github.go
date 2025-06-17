@@ -13,34 +13,28 @@ import (
 )
 
 type GitHubHandler struct {
-	cryptoSvc   *services.CryptoService
 	telegramSvc *telegram.GitHubTelegramService
 	githubSvc   *services.GitHubService
 }
 
-func NewGitHubHandler(cryptoSvc *services.CryptoService, telegramSvc *telegram.GitHubTelegramService, githubSvc *services.GitHubService) *GitHubHandler {
+func NewGitHubHandler(telegramSvc *telegram.GitHubTelegramService, githubSvc *services.GitHubService) *GitHubHandler {
 	return &GitHubHandler{
-		cryptoSvc:   cryptoSvc,
 		telegramSvc: telegramSvc,
 		githubSvc:   githubSvc,
 	}
 }
 
 func (h *GitHubHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
-	// Get encrypted chat ID from URL
+	// Get chat ID from URL
 	vars := mux.Vars(r)
-	encryptedChatID := vars["chatID"]
+	chatID, err := telegram.ParseChatID(vars["chatID"])
+	if err != nil {
+		http.Error(w, "Failed to parse chatID from URL", http.StatusBadRequest)
+		return
+	}
 
 	// Get branch filter from query parameters if present
 	branchFilter := r.URL.Query().Get("branch")
-
-	// Decrypt chat ID
-	chatID, err := h.cryptoSvc.DecryptChatID(encryptedChatID)
-	if err != nil {
-		log.Printf("Failed to decrypt chat ID: %v", err)
-		http.Error(w, "Invalid chat ID", http.StatusBadRequest)
-		return
-	}
 
 	// Read request body
 	body, err := io.ReadAll(r.Body)

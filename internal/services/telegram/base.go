@@ -4,32 +4,28 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/url"
 
 	"git-telegram-bot/internal/config"
-	"git-telegram-bot/internal/services"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 // BaseTelegramService provides common functionality for Telegram bots
 type BaseTelegramService struct {
-	bot       *tgbotapi.BotAPI
-	botId     string
-	cryptoSvc *services.CryptoService
+	bot   *tgbotapi.BotAPI
+	botId string
 }
 
 // NewBaseTelegramService creates a new base Telegram service
-func NewBaseTelegramService(botId string, token string, cryptoSvc *services.CryptoService) (*BaseTelegramService, error) {
+func NewBaseTelegramService(botId string, token string) (*BaseTelegramService, error) {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create %s bot API: %w", botId, err)
 	}
 
 	return &BaseTelegramService{
-		bot:       bot,
-		botId:     botId,
-		cryptoSvc: cryptoSvc,
+		bot:   bot,
+		botId: botId,
 	}, nil
 }
 
@@ -78,22 +74,8 @@ func (s *BaseTelegramService) ProcessUpdate(updateJSON []byte, handler func(*tgb
 }
 
 // SendMessage sends a message to a Telegram chat
-func (s *BaseTelegramService) SendMessage(chatID interface{}, text string) error {
-	var chatIDInt64 int64
-
-	switch v := chatID.(type) {
-	case int64:
-		chatIDInt64 = v
-	case string:
-		// Try to parse string as int64
-		if _, err := fmt.Sscanf(v, "%d", &chatIDInt64); err != nil {
-			return fmt.Errorf("failed to parse chat ID: %w", err)
-		}
-	default:
-		return fmt.Errorf("invalid chat ID type: %T", chatID)
-	}
-
-	msg := tgbotapi.NewMessage(chatIDInt64, text)
+func (s *BaseTelegramService) SendMessage(chatID int64, text string) error {
+	msg := tgbotapi.NewMessage(chatID, text)
 	msg.ParseMode = "HTML"
 	msg.DisableWebPagePreview = true
 
@@ -102,12 +84,5 @@ func (s *BaseTelegramService) SendMessage(chatID interface{}, text string) error
 }
 
 func (s *BaseTelegramService) GetChatWebhookURL(chatID int64) (string, error) {
-	// Encrypt chat ID
-	chatIDStr := fmt.Sprintf("%d", chatID)
-	encryptedChatID, err := s.cryptoSvc.EncryptChatID(chatIDStr)
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("%s/%s/%s", config.Global.BaseURL, s.botId, url.PathEscape(encryptedChatID)), nil
+	return fmt.Sprintf("%s/%s/%d", config.Global.BaseURL, s.botId, chatID), nil
 }

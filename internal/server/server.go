@@ -18,17 +18,14 @@ type Server struct {
 }
 
 func New() (*Server, error) {
-	// Initialize services
-	cryptoSvc := services.NewCryptoService(config.Global.SecretKey)
-
 	// Initialize GitHub Telegram service
-	githubTelegramSvc, err := telegram.NewGitHubTelegramService(cryptoSvc)
+	githubTelegramSvc, err := telegram.NewGitHubTelegramService()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to initialize GitHub Telegram service: %w", err)
 	}
 
 	// Initialize GitLab Telegram service
-	gitlabTelegramSvc, err := telegram.NewGitLabTelegramService(cryptoSvc)
+	gitlabTelegramSvc, err := telegram.NewGitLabTelegramService()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to initialize GitLab Telegram service: %w", err)
 	}
@@ -37,8 +34,8 @@ func New() (*Server, error) {
 	gitlabSvc := services.NewGitLabService()
 
 	// Initialize handlers
-	githubHandler := handlers.NewGitHubHandler(cryptoSvc, githubTelegramSvc, githubSvc)
-	gitlabHandler := handlers.NewGitLabHandler(cryptoSvc, gitlabTelegramSvc, gitlabSvc)
+	githubHandler := handlers.NewGitHubHandler(githubTelegramSvc, githubSvc)
+	gitlabHandler := handlers.NewGitLabHandler(gitlabTelegramSvc, gitlabSvc)
 	githubTelegramHandler := handlers.NewTelegramHandler(githubTelegramSvc)
 	gitlabTelegramHandler := handlers.NewTelegramHandler(gitlabTelegramSvc)
 

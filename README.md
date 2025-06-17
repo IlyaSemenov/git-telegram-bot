@@ -12,7 +12,6 @@ It's an alternative to [notifine](https://github.com/mhkafadar/notifine) which i
   - GitHub workflow run events
   - GitLab pipeline events
   - GitLab merge request events
-- Secure chat ID encryption
 - Easy deployment to AWS Lambda with Terraform
 
 ## How It Works
