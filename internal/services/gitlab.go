@@ -59,6 +59,19 @@ func (s *GitLabService) handlePushEvent(payload []byte) (string, error) {
 	// Build message
 	var message strings.Builder
 
+	// Check if this is a branch deletion event (after hash is all zeros)
+	if event.After == "0000000000000000000000000000000000000000" {
+		message.WriteString(fmt.Sprintf(
+			"🗑️ <b>%s</b> deleted branch <code>%s</code> from <a href=\"%s\">%s</a>",
+			html.EscapeString(event.UserName),
+			html.EscapeString(branch),
+			event.Project.WebURL,
+			html.EscapeString(event.Project.Name),
+		))
+		return message.String(), nil
+	}
+
+	// Regular push event
 	message.WriteString(fmt.Sprintf(
 		"🚀 <b>%s</b> pushed to <a href=\"%s\">%s</a> (branch <code>%s</code>)",
 		html.EscapeString(event.UserName),

@@ -87,6 +87,18 @@ func (s *GitHubService) handlePushEvent(payload []byte, branchFilter string) (st
 	// Build message
 	var message strings.Builder
 
+	// Check if this is a branch deletion event (after hash is all zeros)
+	if event.After == "0000000000000000000000000000000000000000" {
+		message.WriteString(fmt.Sprintf(
+			"🗑️ <b>%s</b> deleted branch <code>%s</code> from <a href=\"%s\">%s</a>",
+			html.EscapeString(event.Pusher.Name),
+			html.EscapeString(branch),
+			event.Repository.HTMLURL,
+			html.EscapeString(event.Repository.FullName),
+		))
+		return message.String(), nil
+	}
+
 	// Use appropriate verb based on whether it's a force push
 	pushVerb := "pushed"
 	if event.Forced {
