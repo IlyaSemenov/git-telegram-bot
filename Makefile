@@ -36,7 +36,7 @@ deploy: build-lambda terraform-apply
 
 # Update existing Lambda function
 update: build-lambda
-	echo aws lambda update-function-code \
+	aws lambda update-function-code \
 		--function-name $(FUNCTION_NAME) \
 		--zip-file fileb://bin/function.zip \
 		--architectures arm64
