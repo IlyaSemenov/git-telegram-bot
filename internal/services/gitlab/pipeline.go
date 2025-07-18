@@ -58,14 +58,27 @@ func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte) error 
 		emoji = "⚠️"
 	case "skipped":
 		emoji = "⏭️"
+	case "created":
+		emoji = "🛠️"
+	case "waiting_for_resource":
+		emoji = "⏳"
+	case "preparing":
+		emoji = "⚙️"
+	case "manual":
+		emoji = "✋"
+	case "scheduled":
+		emoji = "📅"
 	default:
 		emoji = "ℹ️"
 	}
 
+	// Replace underscores with spaces in the status
+	statusDisplay := strings.ReplaceAll(event.ObjectAttributes.Status, "_", " ")
+
 	message.WriteString(fmt.Sprintf(
 		"%s Pipeline %s: <a href=\"%s\">%s</a> — <a href=\"%s\">Pipeline #%d</a> (branch <code>%s</code>)",
 		emoji,
-		html.EscapeString(event.ObjectAttributes.Status),
+		html.EscapeString(statusDisplay),
 		event.Project.WebURL,
 		html.EscapeString(event.Project.Name),
 		event.ObjectAttributes.URL,
@@ -90,8 +103,20 @@ func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte) error 
 				buildEmoji = "⏳"
 			case "canceled":
 				buildEmoji = "⚠️"
+			case "canceling":
+				buildEmoji = "🛑"
 			case "skipped":
 				buildEmoji = "⏭️"
+			case "created":
+				buildEmoji = "🛠️"
+			case "manual":
+				buildEmoji = "✋"
+			case "preparing":
+				buildEmoji = "⚙️"
+			case "scheduled":
+				buildEmoji = "📅"
+			case "waiting_for_resource":
+				buildEmoji = "⏳"
 			default:
 				buildEmoji = "ℹ️"
 			}
