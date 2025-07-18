@@ -117,7 +117,8 @@ func (s *PipelineStorage) GetPipeline(ctx context.Context, pipelineUpdateKey str
 			}
 
 			if gcerrors.Code(err) == gcerrors.AlreadyExists {
-				// Another process created the record, try Get again
+				// Another process created the record; delay before retry to prevent tight-looping
+				time.Sleep(100 * time.Millisecond)
 				continue
 			}
 
