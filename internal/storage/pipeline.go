@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+	"log"
 	"time"
 
 	"gocloud.dev/docstore"
@@ -65,16 +66,66 @@ func (s *PipelineStorage) SavePipeline(ctx context.Context, pipeline *Pipeline) 
 	return s.collection.Put(ctx, pipeline)
 }
 
-// GetPipeline retrieves a pipeline by its update key
+// GetPipeline retrieves a pipeline by its update key with distributed lock logic
 func (s *PipelineStorage) GetPipeline(ctx context.Context, pipelineUpdateKey string) (*Pipeline, error) {
 	pipeline := &Pipeline{PipelineUpdateKey: pipelineUpdateKey}
-	err := s.collection.Get(ctx, pipeline)
+	startTime := time.Now()
+	maxWait := 15 * time.Second
 
-	if err == nil {
-		return pipeline, nil
-	} else if gcerrors.Code(err) == gcerrors.NotFound {
-		return nil, nil
-	} else {
+	for {
+		// Check if we've exceeded max wait time
+		if time.Since(startTime) > maxWait {
+			log.Printf("Timeout waiting for pipeline %s", pipelineUpdateKey)
+			// Let's pretend the pipeline doesn't exist
+			return nil, nil
+		}
+
+		// Check if context was cancelled (e.g., HTTP request timeout)
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+		}
+
+		// Try to fetch the pipeline
+		err := s.collection.Get(ctx, pipeline)
+		if err == nil {
+			if pipeline.MessageID != 0 {
+				// Valid record found
+				return pipeline, nil
+			}
+			// Record is locked; wait and retry
+			time.Sleep(200 * time.Millisecond)
+			continue
+		}
+
+		// Handle "Not Found" case (try to create lock)
+		if gcerrors.Code(err) == gcerrors.NotFound {
+			now := time.Now()
+			lockPipeline := &Pipeline{
+				PipelineUpdateKey: pipelineUpdateKey,
+				MessageID:         0, // 0 means locked
+				CreatedAt:         now,
+				UpdatedAt:         now,
+				ExpiresAt:         now.Add(10 * time.Second).Unix(),
+			}
+
+			err = s.collection.Create(ctx, lockPipeline)
+			if err == nil {
+				// Successfully created lock, return nil since the actual record didn't exist
+				return nil, nil
+			}
+
+			if gcerrors.Code(err) == gcerrors.AlreadyExists {
+				// Another process created the record, try Get again
+				continue
+			}
+
+			// Other Create errors
+			return nil, err
+		}
+
+		// Other Get errors
 		return nil, err
 	}
 }
