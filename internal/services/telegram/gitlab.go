@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"git-telegram-bot/internal/config"
+	"git-telegram-bot/internal/storage"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -14,8 +15,8 @@ type GitLabTelegramService struct {
 }
 
 // NewGitLabTelegramService creates a new GitLab Telegram service
-func NewGitLabTelegramService() (*GitLabTelegramService, error) {
-	base, err := NewBaseTelegramService("gitlab", config.Global.GitLabTelegramBotToken)
+func NewGitLabTelegramService(storageInstance *storage.Storage) (*GitLabTelegramService, error) {
+	base, err := NewBaseTelegramService("gitlab", config.Global.GitLabTelegramBotToken, storageInstance)
 	if err != nil {
 		return nil, err
 	}

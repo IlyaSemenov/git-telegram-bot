@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"git-telegram-bot/internal/handlers"
 	"git-telegram-bot/internal/services"
 	"git-telegram-bot/internal/services/telegram"
+	"git-telegram-bot/internal/storage"
 
 	"github.com/gorilla/mux"
 )
@@ -18,14 +20,20 @@ type Server struct {
 }
 
 func New() (*Server, error) {
+	// Initialize centralized storage
+	storageInstance, err := storage.NewStorage(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("Failed to initialize storage: %w", err)
+	}
+
 	// Initialize GitHub Telegram service
-	githubTelegramSvc, err := telegram.NewGitHubTelegramService()
+	githubTelegramSvc, err := telegram.NewGitHubTelegramService(storageInstance)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to initialize GitHub Telegram service: %w", err)
 	}
 
 	// Initialize GitLab Telegram service
-	gitlabTelegramSvc, err := telegram.NewGitLabTelegramService()
+	gitlabTelegramSvc, err := telegram.NewGitLabTelegramService(storageInstance)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to initialize GitLab Telegram service: %w", err)
 	}

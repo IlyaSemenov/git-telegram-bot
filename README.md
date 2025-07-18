@@ -21,6 +21,31 @@ It's an alternative to [notifine](https://github.com/mhkafadar/notifine) which i
 3. Add this URL to your GitHub/GitLab repository's webhook settings
 4. Events are now delivered to your Telegram chat
 
+## Privacy Policy
+
+We take your privacy seriously. Here's what you need to know about data handling:
+
+**We store:**
+
+- Only Telegram chat IDs (numeric identifiers) to know where to deliver updates
+- The last active time for each chat ID
+- We automatically remove chat IDs when the bot is blocked from a chat
+
+**We explicitly DO NOT store:**
+
+- Names of users, organizations, or repositories
+- Commit messages or code content
+- Any personally identifiable information
+- Any data that could be traced back to specific individuals or companies
+
+**Data flow:**
+
+1. Webhook events pass through our system momentarily for processing
+2. Only the necessary notification content is forwarded to Telegram
+3. No message content or metadata is retained after delivery
+
+The bot is designed to be a privacy-focused relay service - we keep the absolute minimum data required for operation and nothing more. All stored data exists solely to maintain the bot's functionality.
+
 ## Documentation
 
 - [Running Locally](docs/run-local.md)

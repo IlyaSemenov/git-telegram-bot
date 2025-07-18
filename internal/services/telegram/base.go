@@ -1,31 +1,36 @@
 package telegram
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	"git-telegram-bot/internal/config"
+	"git-telegram-bot/internal/storage"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 // BaseTelegramService provides common functionality for Telegram bots
 type BaseTelegramService struct {
-	bot   *tgbotapi.BotAPI
-	botId string
+	bot         *tgbotapi.BotAPI
+	botId       string
+	chatStorage *storage.ChatStorage
 }
 
 // NewBaseTelegramService creates a new base Telegram service
-func NewBaseTelegramService(botId string, token string) (*BaseTelegramService, error) {
+func NewBaseTelegramService(botId string, token string, storageInstance *storage.Storage) (*BaseTelegramService, error) {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create %s bot API: %w", botId, err)
 	}
 
 	return &BaseTelegramService{
-		bot:   bot,
-		botId: botId,
+		bot:         bot,
+		botId:       botId,
+		chatStorage: storageInstance.ChatStorage,
 	}, nil
 }
 
@@ -80,7 +85,39 @@ func (s *BaseTelegramService) SendMessage(chatID int64, text string) error {
 	msg.DisableWebPagePreview = true
 
 	_, err := s.bot.Send(msg)
+
+	// Update chat status based on delivery result
+	ctx := context.Background()
+	chat := &storage.Chat{
+		ChatID:  chatID,
+		BotType: s.botId,
+	}
+
+	if err == nil {
+		// Save chat info (this will update existing or create new)
+		if err := s.chatStorage.SaveChat(ctx, chat); err != nil {
+			log.Printf("Failed to save chat info: %v", err)
+		}
+	} else if s.isBotBlockedError(err) {
+		if err := s.chatStorage.DeleteChat(ctx, chat); err != nil {
+			log.Printf("Failed to delete chat info: %v", err)
+		}
+	}
+
 	return err
+}
+
+// isBotBlockedError checks if the error indicates the bot was blocked or removed
+func (s *BaseTelegramService) isBotBlockedError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	errStr := err.Error()
+	return strings.Contains(errStr, "bot was blocked") ||
+		strings.Contains(errStr, "user is deactivated") ||
+		strings.Contains(errStr, "chat not found") ||
+		strings.Contains(errStr, "bot is not a member")
 }
 
 func (s *BaseTelegramService) GetChatWebhookURL(chatID int64) (string, error) {

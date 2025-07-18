@@ -15,11 +15,12 @@ import (
 var Global *Config
 
 type Config struct {
-	GitHubTelegramBotToken string
-	GitLabTelegramBotToken string
-	SecretKey              string
-	BaseURL                string
-	IsLambda               bool
+	GitHubTelegramBotToken      string
+	GitLabTelegramBotToken      string
+	SecretKey                   string
+	BaseURL                     string
+	IsLambda                    bool
+	StorageConnectionStringBase string
 }
 
 func GetLambdaURL() (string, error) {
@@ -48,8 +49,10 @@ func GetLambdaURL() (string, error) {
 
 // Initialize loads the configuration and sets the Global variable
 func Initialize() error {
+	var lambdaFunctionName = os.Getenv("AWS_LAMBDA_FUNCTION_NAME")
+
 	// Check if we're running in Lambda
-	isLambda := os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != ""
+	isLambda := lambdaFunctionName != ""
 
 	// Load .env file if it exists and we're not in Lambda
 	if !isLambda {
@@ -87,12 +90,20 @@ func Initialize() error {
 		return fmt.Errorf("SECRET_KEY environment variable is missing")
 	}
 
+	// Auto-detect storage connection string base
+	var storageConnectionStringBase string
+	if isLambda {
+		// Running in AWS - use DynamoDB
+		storageConnectionStringBase = fmt.Sprintf("dynamodb://%s", lambdaFunctionName)
+	}
+
 	Global = &Config{
-		GitHubTelegramBotToken: githubTelegramBotToken,
-		GitLabTelegramBotToken: gitlabTelegramBotToken,
-		SecretKey:              secretKey,
-		BaseURL:                baseURL,
-		IsLambda:               isLambda,
+		GitHubTelegramBotToken:      githubTelegramBotToken,
+		GitLabTelegramBotToken:      gitlabTelegramBotToken,
+		SecretKey:                   secretKey,
+		BaseURL:                     baseURL,
+		IsLambda:                    isLambda,
+		StorageConnectionStringBase: storageConnectionStringBase,
 	}
 
 	return nil
