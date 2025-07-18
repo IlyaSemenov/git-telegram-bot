@@ -28,16 +28,16 @@ This bot is designed with privacy as a core principle. Here’s how data is hand
 **Stored data:**
 
 - **Chat identifiers**:
-  - Telegram chat IDs (numeric only) and timestamp of last handled event
+  - Telegram chat IDs (numeric only) and timestamp of the last handled event
   - Automatically removed if the bot is blocked by the chat
-- **Pipeline tracking**:
+- **GitLab pipeline tracking**:
   - SHA-256 hashes of pipeline identifiers (irreversible, cannot reveal original URLs)
   - Associated Telegram message IDs (for updating status messages)
   - Automatically purged after 24 hours of pipeline inactivity
 
-**No storage of**:
+**Explicitly NOT stored:**
 
-- Repository/pipeline URLs in readable form
+- Repository/pipeline URLs (only hashes)
 - Names of users, organizations, or repositories
 - Commit messages, code content, or file changes
 - Personally identifiable information (PII)
