@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"git-telegram-bot/internal/services"
+	"git-telegram-bot/internal/services/github"
 	"git-telegram-bot/internal/services/telegram"
 
 	"github.com/gorilla/mux"
@@ -14,10 +14,10 @@ import (
 
 type GitHubHandler struct {
 	telegramSvc *telegram.GitHubTelegramService
-	githubSvc   *services.GitHubService
+	githubSvc   *github.GitHubService
 }
 
-func NewGitHubHandler(telegramSvc *telegram.GitHubTelegramService, githubSvc *services.GitHubService) *GitHubHandler {
+func NewGitHubHandler(telegramSvc *telegram.GitHubTelegramService, githubSvc *github.GitHubService) *GitHubHandler {
 	return &GitHubHandler{
 		telegramSvc: telegramSvc,
 		githubSvc:   githubSvc,
@@ -53,23 +53,9 @@ func (h *GitHubHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse GitHub event
-	message, err := h.githubSvc.ParseEvent(eventType, body, branchFilter)
-	if err != nil {
+	if err := h.githubSvc.HandleEvent(chatID, eventType, body, branchFilter); err != nil {
 		log.Printf("Failed to parse GitHub event: %v", err)
 		http.Error(w, "Failed to parse GitHub event", http.StatusBadRequest)
-		return
-	}
-
-	// Skip empty messages
-	if message == "" {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	// Send message to Telegram
-	if err := h.telegramSvc.SendMessage(chatID, message); err != nil {
-		log.Printf("Failed to send message to Telegram: %v", err)
-		http.Error(w, "Failed to send message to Telegram", http.StatusInternalServerError)
 		return
 	}
 

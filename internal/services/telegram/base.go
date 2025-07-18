@@ -80,11 +80,17 @@ func (s *BaseTelegramService) ProcessUpdate(updateJSON []byte, handler func(*tgb
 
 // SendMessage sends a message to a Telegram chat
 func (s *BaseTelegramService) SendMessage(chatID int64, text string) error {
+	_, err := s.SendMessageWithResult(chatID, text)
+	return err
+}
+
+// SendMessageWithResult sends a message to a Telegram chat and returns the message info
+func (s *BaseTelegramService) SendMessageWithResult(chatID int64, text string) (*tgbotapi.Message, error) {
 	msg := tgbotapi.NewMessage(chatID, text)
 	msg.ParseMode = "HTML"
 	msg.DisableWebPagePreview = true
 
-	_, err := s.bot.Send(msg)
+	sentMsg, err := s.bot.Send(msg)
 
 	// Update chat status based on delivery result
 	ctx := context.Background()
@@ -104,6 +110,16 @@ func (s *BaseTelegramService) SendMessage(chatID int64, text string) error {
 		}
 	}
 
+	return &sentMsg, err
+}
+
+// UpdateMessage updates an existing message in a Telegram chat
+func (s *BaseTelegramService) UpdateMessage(chatID int64, messageID int, text string) error {
+	msg := tgbotapi.NewEditMessageText(chatID, messageID, text)
+	msg.ParseMode = "HTML"
+	msg.DisableWebPagePreview = true
+
+	_, err := s.bot.Send(msg)
 	return err
 }
 

@@ -8,7 +8,8 @@ import (
 
 	"git-telegram-bot/internal/config"
 	"git-telegram-bot/internal/handlers"
-	"git-telegram-bot/internal/services"
+	"git-telegram-bot/internal/services/github"
+	"git-telegram-bot/internal/services/gitlab"
 	"git-telegram-bot/internal/services/telegram"
 	"git-telegram-bot/internal/storage"
 
@@ -38,8 +39,8 @@ func New() (*Server, error) {
 		return nil, fmt.Errorf("Failed to initialize GitLab Telegram service: %w", err)
 	}
 
-	githubSvc := services.NewGitHubService()
-	gitlabSvc := services.NewGitLabService()
+	githubSvc := github.NewGitHubService(githubTelegramSvc)
+	gitlabSvc := gitlab.NewGitLabService(gitlabTelegramSvc)
 
 	// Initialize handlers
 	githubHandler := handlers.NewGitHubHandler(githubTelegramSvc, githubSvc)

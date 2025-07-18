@@ -10,7 +10,7 @@ It's an alternative to [notifine](https://github.com/mhkafadar/notifine) which i
 - Support for multiple events:
   - Push events (with branch filtering)
   - GitHub workflow run events
-  - GitLab pipeline events
+  - GitLab pipeline events with real-time updates
   - GitLab merge request events
 - Easy deployment to AWS Lambda with Terraform
 
@@ -23,28 +23,40 @@ It's an alternative to [notifine](https://github.com/mhkafadar/notifine) which i
 
 ## Privacy Policy
 
-We take your privacy seriously. Here's what you need to know about data handling:
+This bot is designed with privacy as a core principle. Here’s how data is handled:
 
-**We store:**
+**Stored data:**
 
-- Only Telegram chat IDs (numeric identifiers) to know where to deliver updates
-- The last active time for each chat ID
-- We automatically remove chat IDs when the bot is blocked from a chat
+- **Chat identifiers**:
+  - Telegram chat IDs (numeric only) and timestamp of last handled event
+  - Automatically removed if the bot is blocked by the chat
+- **Pipeline tracking**:
+  - SHA-256 hashes of pipeline identifiers (irreversible, cannot reveal original URLs)
+  - Associated Telegram message IDs (for updating status messages)
+  - Automatically purged after 24 hours of pipeline inactivity
 
-**We explicitly DO NOT store:**
+**No storage of**:
 
+- Repository/pipeline URLs in readable form
 - Names of users, organizations, or repositories
-- Commit messages or code content
-- Any personally identifiable information
-- Any data that could be traced back to specific individuals or companies
+- Commit messages, code content, or file changes
+- Personally identifiable information (PII)
+- Data that could identify individuals or organizations
 
-**Data flow:**
+**Data flow**:
 
-1. Webhook events pass through our system momentarily for processing
-2. Only the necessary notification content is forwarded to Telegram
-3. No message content or metadata is retained after delivery
+1. Webhook events are processed in real-time (never persisted)
+2. Pipeline URLs are instantly hashed for status updates
+3. Only necessary notification content is forwarded to Telegram
+4. No message content remains in the system after delivery
 
-The bot is designed to be a privacy-focused relay service - we keep the absolute minimum data required for operation and nothing more. All stored data exists solely to maintain the bot's functionality.
+**Retention rules**:
+
+- Most data: Purged immediately after processing
+- Pipeline tracking: Purged after 24 hours of inactivity
+- All chat data: Removed when the bot is blocked
+
+This is a privacy-focused relay bot that retains only the minimal data required for functionality.
 
 ## Documentation
 

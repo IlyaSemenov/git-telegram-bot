@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"context"
 	"fmt"
 
 	"git-telegram-bot/internal/config"
@@ -12,6 +13,7 @@ import (
 // GitLabTelegramService is a Telegram service for GitLab notifications
 type GitLabTelegramService struct {
 	*BaseTelegramService
+	storage *storage.Storage
 }
 
 // NewGitLabTelegramService creates a new GitLab Telegram service
@@ -23,6 +25,7 @@ func NewGitLabTelegramService(storageInstance *storage.Storage) (*GitLabTelegram
 
 	return &GitLabTelegramService{
 		BaseTelegramService: base,
+		storage:             storageInstance,
 	}, nil
 }
 
@@ -80,6 +83,40 @@ func (s *GitLabTelegramService) handleStartCommand(message *tgbotapi.Message) er
 		"Use /webhook to get your unique webhook URL."
 
 	return s.SendMessage(message.Chat.ID, text)
+}
+
+// SendOrUpdatePipelineMessage updates an existing pipeline message or creates a new one
+func (s *GitLabTelegramService) SendOrUpdatePipelineMessage(chatID int64, pipelineURL string, text string) error {
+	ctx := context.Background()
+	pipelineUpdateKey := storage.CreatePipelineUpdateKey(pipelineURL, chatID)
+
+	// Get existing pipeline mapping
+	pipeline, err := s.storage.PipelineStorage.GetPipeline(ctx, pipelineUpdateKey)
+	if err != nil {
+		return err
+	}
+
+	if pipeline == nil {
+		// Pipeline not found, send new message
+		msg, err := s.SendMessageWithResult(chatID, text)
+		if err != nil {
+			return err
+		}
+
+		// Store pipeline mapping
+		pipeline := &storage.Pipeline{
+			PipelineUpdateKey: pipelineUpdateKey,
+			MessageID:         msg.MessageID,
+		}
+		return s.storage.PipelineStorage.SavePipeline(ctx, pipeline)
+	} else {
+		// Update the existing message
+		if err := s.UpdateMessage(chatID, pipeline.MessageID, text); err != nil {
+			return err
+		}
+		// Update the mapping timestamp
+		return s.storage.PipelineStorage.SavePipeline(ctx, pipeline)
+	}
 }
 
 // handleHelpCommand handles the /help command

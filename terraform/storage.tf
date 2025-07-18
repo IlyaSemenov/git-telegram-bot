@@ -21,6 +21,28 @@ resource "aws_dynamodb_table" "chats" {
   }
 }
 
+# DynamoDB table for storing pipeline information
+resource "aws_dynamodb_table" "pipelines" {
+  name         = "${local.function_name}-pipelines"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "pipeline_update_key"
+
+  attribute {
+    name = "pipeline_update_key"
+    type = "S" # String (hash of pipeline URL + chat ID)
+  }
+
+  ttl {
+    attribute_name = "expires_at"
+    enabled        = true
+  }
+
+  tags = {
+    Name        = "${local.function_name}-pipelines"
+    Environment = terraform.workspace
+  }
+}
+
 # IAM policy for DynamoDB access
 resource "aws_iam_policy" "dynamodb_policy" {
   name        = "${local.function_name}-dynamodb-policy"
@@ -34,6 +56,7 @@ resource "aws_iam_policy" "dynamodb_policy" {
         Action = [
           "dynamodb:DescribeTable",
           "dynamodb:GetItem",
+          "dynamodb:BatchGetItem", // docstore .Get() needs this even for key access
           "dynamodb:PutItem",
           "dynamodb:UpdateItem",
           "dynamodb:DeleteItem",
@@ -42,7 +65,9 @@ resource "aws_iam_policy" "dynamodb_policy" {
         ]
         Resource = [
           aws_dynamodb_table.chats.arn,
-          "${aws_dynamodb_table.chats.arn}/*"
+          "${aws_dynamodb_table.chats.arn}/*",
+          aws_dynamodb_table.pipelines.arn,
+          "${aws_dynamodb_table.pipelines.arn}/*"
         ]
       }
     ]
