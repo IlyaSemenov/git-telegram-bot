@@ -5,10 +5,6 @@
   "go.lintTool": "golangci-lint",
   "go.testOnSave": false,
   "go.buildOnSave": "workspace",
-  "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.organizeImports": "explicit"
-  },
   "files.eol": "\n",
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true,
@@ -16,7 +12,7 @@
     "editor.defaultFormatter": "golang.go",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit"
+      "source.organizeImports": "never"
     }
   },
   "[markdown]": {
