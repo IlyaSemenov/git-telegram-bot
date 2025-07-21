@@ -21,8 +21,10 @@ type Server struct {
 }
 
 func New() (*Server, error) {
+	ctx := context.Background()
+
 	// Initialize centralized storage
-	storageInstance, err := storage.NewStorage(context.Background())
+	storageInstance, err := storage.NewStorage(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to initialize storage: %w", err)
 	}
@@ -51,8 +53,7 @@ func New() (*Server, error) {
 		router.HandleFunc("/github/{chatID}", githubHandler.HandleWebhook).Methods("POST")
 
 		// GitHub Telegram bot webhook endpoint
-		githubTelegramHandler := handlers.NewTelegramHandler(githubTelegramSvc)
-		router.HandleFunc("/telegram/webhook/github", githubTelegramHandler.HandleWebhook).Methods("POST")
+		router.HandleFunc("/telegram/webhook/github", githubTelegramSvc.WebhookHandler()).Methods("POST")
 	}
 
 	// Setup GitLab service
@@ -68,19 +69,18 @@ func New() (*Server, error) {
 		router.HandleFunc("/gitlab/{chatID}", gitlabHandler.HandleWebhook).Methods("POST")
 
 		// GitLab Telegram bot webhook endpoint
-		gitlabTelegramHandler := handlers.NewTelegramHandler(gitlabTelegramSvc)
-		router.HandleFunc("/telegram/webhook/gitlab", gitlabTelegramHandler.HandleWebhook).Methods("POST")
+		router.HandleFunc("/telegram/webhook/gitlab", gitlabTelegramSvc.WebhookHandler()).Methods("POST")
 	}
 
 	// Initialize function for Telegram bots
 	initBots := func() error {
 		if githubTelegramSvc != nil {
-			if err := githubTelegramSvc.Init(); err != nil {
+			if err := githubTelegramSvc.InitBot(); err != nil {
 				return fmt.Errorf("Failed to init GitHub Telegram bot: %v", err)
 			}
 		}
 		if gitlabTelegramSvc != nil {
-			if err := gitlabTelegramSvc.Init(); err != nil {
+			if err := gitlabTelegramSvc.InitBot(); err != nil {
 				return fmt.Errorf("Failed to init GitLab Telegram bot: %v", err)
 			}
 		}
@@ -120,6 +120,13 @@ func New() (*Server, error) {
 		if err := initBots(); err != nil {
 			return nil, err
 		}
+	}
+
+	if githubTelegramSvc != nil {
+		go githubTelegramSvc.StartBot(ctx)
+	}
+	if gitlabTelegramSvc != nil {
+		go gitlabTelegramSvc.StartBot(ctx)
 	}
 
 	return &Server{

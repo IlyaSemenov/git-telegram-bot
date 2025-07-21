@@ -5,38 +5,83 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
 
 	"git-telegram-bot/internal/config"
 	"git-telegram-bot/internal/storage"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/go-telegram/bot"
+	"github.com/go-telegram/bot/models"
 )
 
-// BaseTelegramService provides common functionality for Telegram bots
-type BaseTelegramService struct {
-	bot         *tgbotapi.BotAPI
-	botId       string
+// TelegramService provides common functionality for Telegram bots
+type TelegramService struct {
+	botId       string // Internal bot ID (github or gitlab)
+	bot         *bot.Bot
 	chatStorage *storage.ChatStorage
 }
 
-// NewBaseTelegramService creates a new base Telegram service
-func NewBaseTelegramService(botId string, token string, storageInstance *storage.Storage) (*BaseTelegramService, error) {
-	bot, err := tgbotapi.NewBotAPI(token)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to create %s bot API: %w", botId, err)
+// NewBTelegramService creates a new Telegram service
+func NewTelegramService(botId string, token string, storageInstance *storage.Storage) (*TelegramService, error) {
+	if token == "" {
+		// Allow to create nil service
+		return nil, nil
 	}
 
-	return &BaseTelegramService{
-		bot:         bot,
+	opts := []bot.Option{
+		bot.WithSkipGetMe(), // We'll call getMe manually during Init
+		bot.WithDefaultHandler(func(ctx context.Context, bot *bot.Bot, update *models.Update) {
+			// Do nothing. The default implementation logs all unhandled update.
+		}),
+	}
+
+	botInstance, err := bot.New(token, opts...)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create %s bot service: %w", botId, err)
+	}
+
+	return &TelegramService{
+		bot:         botInstance,
 		botId:       botId,
 		chatStorage: storageInstance.ChatStorage,
 	}, nil
 }
 
-// Init initializes a Telegram bot
-func (s *BaseTelegramService) Init(commands []tgbotapi.BotCommand) error {
-	log.Printf("Init %s bot @%s", s.botId, s.bot.Self.UserName)
+func (s *TelegramService) registerCommandHandler(command string, handler bot.HandlerFunc) {
+	commandText := "/" + command
+	commandTextPrefix := commandText + "@"
+	matchFunc := func(update *models.Update) bool {
+		if update.Message != nil {
+			for _, e := range update.Message.Entities {
+				if e.Offset == 0 {
+					part := update.Message.Text[e.Offset : e.Offset+e.Length]
+					if part == commandText || strings.HasPrefix(part, commandTextPrefix) {
+						return true
+					}
+				}
+			}
+		}
+		return false
+	}
+	s.bot.RegisterHandlerMatchFunc(matchFunc, handler)
+}
+
+// StartBot starts a Telegram bot
+func (s *TelegramService) StartBot(ctx context.Context) {
+	s.bot.StartWebhook(ctx)
+}
+
+// InitBot initializes a Telegram bot (in Lambda, this runs only once after deployment)
+func (s *TelegramService) InitBot(commands []models.BotCommand) error {
+	// Get bot info
+	ctx := context.Background()
+	me, err := s.bot.GetMe(ctx)
+	if err != nil {
+		return fmt.Errorf("Failed to get bot info for %s: %w", s.botId, err)
+	}
+
+	log.Printf("Init %s bot @%s", s.botId, me.Username)
 
 	// Set up webhook
 	webhookURL := config.Global.BaseURL + "/telegram/webhook/" + s.botId
@@ -55,45 +100,69 @@ func (s *BaseTelegramService) Init(commands []tgbotapi.BotCommand) error {
 }
 
 // SetWebhook sets up the webhook for the bot
-func (s *BaseTelegramService) SetWebhook(webhookURL string) error {
-	wh, _ := tgbotapi.NewWebhook(webhookURL)
-	_, err := s.bot.Request(wh)
+func (s *TelegramService) SetWebhook(webhookURL string) error {
+	ctx := context.Background()
+	params := &bot.SetWebhookParams{
+		URL: webhookURL,
+	}
+	_, err := s.bot.SetWebhook(ctx, params)
 	return err
+}
+
+func (s *TelegramService) WebhookHandler() http.HandlerFunc {
+	botWebhookHandler := s.bot.WebhookHandler()
+	return func(res http.ResponseWriter, req *http.Request) {
+		botWebhookHandler(res, req)
+		// For now, always return success
+		// TODO: somehow detect error coming from botWebhookHandler
+		res.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(res).Encode(map[string]string{"status": "ok"}); err != nil {
+			log.Printf("Failed to encode response: %v", err)
+		}
+	}
+}
+
+func (s *TelegramService) GetChatWebhookURL(chatID int64) string {
+	return fmt.Sprintf("%s/%s/%d", config.Global.BaseURL, s.botId, chatID)
 }
 
 // SetCommands sets the list of available commands for the bot
-func (s *BaseTelegramService) SetCommands(commands []tgbotapi.BotCommand) error {
-	config := tgbotapi.NewSetMyCommands(commands...)
-	_, err := s.bot.Request(config)
+func (s *TelegramService) SetCommands(commands []models.BotCommand) error {
+	ctx := context.Background()
+	params := &bot.SetMyCommandsParams{
+		Commands: commands,
+	}
+	_, err := s.bot.SetMyCommands(ctx, params)
 	return err
 }
 
-// ProcessUpdate processes a Telegram update
-func (s *BaseTelegramService) ProcessUpdate(updateJSON []byte, handler func(*tgbotapi.Update) error) error {
-	var update tgbotapi.Update
-	if err := json.Unmarshal(updateJSON, &update); err != nil {
-		return err
-	}
-
-	return handler(&update)
-}
-
 // SendMessage sends a message to a Telegram chat
-func (s *BaseTelegramService) SendMessage(chatID int64, text string) error {
+func (s *TelegramService) SendMessage(chatID int64, text string) error {
 	_, err := s.SendMessageWithResult(chatID, text)
 	return err
 }
 
-// SendMessageWithResult sends a message to a Telegram chat and returns the message info
-func (s *BaseTelegramService) SendMessageWithResult(chatID int64, text string) (*tgbotapi.Message, error) {
-	msg := tgbotapi.NewMessage(chatID, text)
-	msg.ParseMode = "HTML"
-	msg.DisableWebPagePreview = true
+func (s *TelegramService) SendMessageOrLogError(chatID int64, text string) {
+	if err := s.SendMessage(chatID, text); err != nil {
+		log.Printf("Failed to send message from %s to chat %d: %v", s.botId, chatID, err)
+	}
+}
 
-	sentMsg, err := s.bot.Send(msg)
+// SendMessageWithResult sends a message to a Telegram chat and returns the message info
+func (s *TelegramService) SendMessageWithResult(chatID int64, text string) (*models.Message, error) {
+	ctx := context.Background()
+	params := &bot.SendMessageParams{
+		ChatID:    chatID,
+		Text:      text,
+		ParseMode: models.ParseModeHTML,
+		LinkPreviewOptions: &models.LinkPreviewOptions{
+			IsDisabled: bot.True(),
+		},
+	}
+
+	msg, err := s.bot.SendMessage(ctx, params)
 
 	// Update chat status based on delivery result
-	ctx := context.Background()
 	chat := &storage.Chat{
 		ChatID:  chatID,
 		BotType: s.botId,
@@ -104,27 +173,34 @@ func (s *BaseTelegramService) SendMessageWithResult(chatID int64, text string) (
 		if err := s.chatStorage.SaveChat(ctx, chat); err != nil {
 			log.Printf("Failed to save chat info: %v", err)
 		}
-	} else if s.isBotBlockedError(err) {
+	} else if isBotBlockedError(err) {
 		if err := s.chatStorage.DeleteChat(ctx, chat); err != nil {
 			log.Printf("Failed to delete chat info: %v", err)
 		}
 	}
 
-	return &sentMsg, err
+	return msg, err
 }
 
 // UpdateMessage updates an existing message in a Telegram chat
-func (s *BaseTelegramService) UpdateMessage(chatID int64, messageID int, text string) error {
-	msg := tgbotapi.NewEditMessageText(chatID, messageID, text)
-	msg.ParseMode = "HTML"
-	msg.DisableWebPagePreview = true
+func (s *TelegramService) UpdateMessage(chatID int64, messageID int, text string) error {
+	ctx := context.Background()
+	params := &bot.EditMessageTextParams{
+		ChatID:    chatID,
+		MessageID: messageID,
+		Text:      text,
+		ParseMode: models.ParseModeHTML,
+		LinkPreviewOptions: &models.LinkPreviewOptions{
+			IsDisabled: bot.True(),
+		},
+	}
 
-	_, err := s.bot.Send(msg)
+	_, err := s.bot.EditMessageText(ctx, params)
 	return err
 }
 
 // isBotBlockedError checks if the error indicates the bot was blocked or removed
-func (s *BaseTelegramService) isBotBlockedError(err error) bool {
+func isBotBlockedError(err error) bool {
 	if err == nil {
 		return false
 	}
@@ -134,8 +210,4 @@ func (s *BaseTelegramService) isBotBlockedError(err error) bool {
 		strings.Contains(errStr, "user is deactivated") ||
 		strings.Contains(errStr, "chat not found") ||
 		strings.Contains(errStr, "bot is not a member")
-}
-
-func (s *BaseTelegramService) GetChatWebhookURL(chatID int64) (string, error) {
-	return fmt.Sprintf("%s/%s/%d", config.Global.BaseURL, s.botId, chatID), nil
 }

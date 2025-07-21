@@ -1,35 +1,40 @@
 package telegram
 
 import (
+	"context"
 	"fmt"
 
 	"git-telegram-bot/internal/config"
 	"git-telegram-bot/internal/storage"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/go-telegram/bot"
+	"github.com/go-telegram/bot/models"
 )
 
 type GitHubTelegramService struct {
-	*BaseTelegramService
+	*TelegramService
 }
 
 func NewGitHubTelegramService(storageInstance *storage.Storage) (*GitHubTelegramService, error) {
-	if config.Global.GitHubTelegramBotToken == "" {
-		return nil, nil
-	}
-
-	base, err := NewBaseTelegramService("github", config.Global.GitHubTelegramBotToken, storageInstance)
-	if err != nil {
+	s, err := NewTelegramService("github", config.Global.GitHubTelegramBotToken, storageInstance)
+	if s == nil || err != nil {
 		return nil, err
 	}
 
-	return &GitHubTelegramService{
-		BaseTelegramService: base,
-	}, nil
+	gs := &GitHubTelegramService{
+		TelegramService: s,
+	}
+
+	s.registerCommandHandler("start", gs.handleStartCommand)
+	s.registerCommandHandler("help", gs.handleHelpCommand)
+	s.registerCommandHandler("webhook", gs.handleWebhookCommand)
+
+	return gs, nil
 }
 
-func (s *GitHubTelegramService) Init() error {
-	return s.BaseTelegramService.Init([]tgbotapi.BotCommand{
+// InitBot initializes the GitLab Telegram bot
+func (s *GitHubTelegramService) InitBot() error {
+	return s.TelegramService.InitBot([]models.BotCommand{
 		{
 			Command:     "start",
 			Description: "Start the bot",
@@ -45,61 +50,29 @@ func (s *GitHubTelegramService) Init() error {
 	})
 }
 
-// ProcessUpdate processes a Telegram update
-func (s *GitHubTelegramService) ProcessUpdate(updateJSON []byte) error {
-	return s.BaseTelegramService.ProcessUpdate(updateJSON, s.handleUpdate)
-}
-
-// handleUpdate handles a Telegram update
-func (s *GitHubTelegramService) handleUpdate(update *tgbotapi.Update) error {
-	// Handle commands
-	if update.Message != nil && update.Message.IsCommand() {
-		return s.handleCommand(update.Message)
-	}
-
-	return nil
-}
-
-// handleCommand handles a Telegram command
-func (s *GitHubTelegramService) handleCommand(message *tgbotapi.Message) error {
-	switch message.Command() {
-	case "start":
-		return s.handleStartCommand(message)
-	case "help":
-		return s.handleHelpCommand(message)
-	case "webhook":
-		return s.handleWebhookCommand(message)
-	default:
-		return s.SendMessage(message.Chat.ID, "Unknown command. Type /help for available commands.")
-	}
-}
-
 // handleStartCommand handles the /start command
-func (s *GitHubTelegramService) handleStartCommand(message *tgbotapi.Message) error {
+func (s *GitHubTelegramService) handleStartCommand(ctx context.Context, b *bot.Bot, update *models.Update) {
 	text := "👋 Welcome to GitHub Watch Bot!\n\n" +
 		"I can forward GitHub webhook events to this chat.\n\n" +
 		"Use /webhook to get your unique webhook URL."
 
-	return s.SendMessage(message.Chat.ID, text)
+	s.SendMessageOrLogError(update.Message.Chat.ID, text)
 }
 
 // handleHelpCommand handles the /help command
-func (s *GitHubTelegramService) handleHelpCommand(message *tgbotapi.Message) error {
+func (s *GitHubTelegramService) handleHelpCommand(ctx context.Context, b *bot.Bot, update *models.Update) {
 	text := "📚 <b>Available Commands</b>\n\n" +
 		"• /start - Start the bot\n" +
 		"• /help - Show this help message\n" +
 		"• /webhook - Get your unique GitHub webhook URL\n\n" +
 		"To set up webhooks, use the appropriate command and add the URL to your repository's webhook settings."
 
-	return s.SendMessage(message.Chat.ID, text)
+	s.SendMessageOrLogError(update.Message.Chat.ID, text)
 }
 
 // handleGitHubCommand handles the /github command
-func (s *GitHubTelegramService) handleWebhookCommand(message *tgbotapi.Message) error {
-	webhookURL, err := s.GetChatWebhookURL(message.Chat.ID)
-	if err != nil {
-		return err
-	}
+func (s *GitHubTelegramService) handleWebhookCommand(ctx context.Context, b *bot.Bot, update *models.Update) {
+	webhookURL := s.GetChatWebhookURL(update.Message.Chat.ID)
 
 	// Create response message
 	text := fmt.Sprintf("🔗 <b>Your GitHub Webhook URL</b>\n\n<code>%s</code>\n\n", webhookURL) +
@@ -112,5 +85,5 @@ func (s *GitHubTelegramService) handleWebhookCommand(message *tgbotapi.Message) 
 		"6. Click 'Add webhook'\n\n" +
 		"You'll receive a confirmation message when the webhook is set up correctly."
 
-	return s.SendMessage(message.Chat.ID, text)
+	s.SendMessageOrLogError(update.Message.Chat.ID, text)
 }

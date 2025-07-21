@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.29.15
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.71.2
 	github.com/awslabs/aws-lambda-go-api-proxy v0.14.0
-	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
+	github.com/go-telegram/bot v1.16.0
 	github.com/gorilla/mux v1.8.0
 	github.com/joho/godotenv v1.5.1
 	gocloud.dev v0.39.0
