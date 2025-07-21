@@ -18,6 +18,10 @@ type GitLabTelegramService struct {
 
 // NewGitLabTelegramService creates a new GitLab Telegram service
 func NewGitLabTelegramService(storageInstance *storage.Storage) (*GitLabTelegramService, error) {
+	if config.Global.GitLabTelegramBotToken == "" {
+		return nil, nil
+	}
+
 	base, err := NewBaseTelegramService("gitlab", config.Global.GitLabTelegramBotToken, storageInstance)
 	if err != nil {
 		return nil, err

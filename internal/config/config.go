@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -57,7 +58,7 @@ func Initialize() error {
 	// Load .env file if it exists and we're not in Lambda
 	if !isLambda {
 		if err := godotenv.Load(); err != nil {
-			fmt.Printf("Warning: Error loading .env file: %v\n", err)
+			log.Printf("Warning: Error loading .env file: %v", err)
 		}
 	}
 
@@ -76,13 +77,10 @@ func Initialize() error {
 	baseURL = strings.TrimSuffix(baseURL, "/")
 
 	githubTelegramBotToken := os.Getenv("GITHUB_TELEGRAM_BOT_TOKEN")
-	if githubTelegramBotToken == "" {
-		return fmt.Errorf("GITHUB_TELEGRAM_BOT_TOKEN environment variable is missing")
-	}
-
 	gitlabTelegramBotToken := os.Getenv("GITLAB_TELEGRAM_BOT_TOKEN")
-	if gitlabTelegramBotToken == "" {
-		return fmt.Errorf("GITLAB_TELEGRAM_BOT_TOKEN environment variable is missing")
+
+	if githubTelegramBotToken == "" && gitlabTelegramBotToken == "" {
+		return fmt.Errorf("You must provide at least one of the environment variables: GITHUB_TELEGRAM_BOT_TOKEN or GITLAB_TELEGRAM_BOT_TOKEN.")
 	}
 
 	secretKey := os.Getenv("SECRET_KEY")

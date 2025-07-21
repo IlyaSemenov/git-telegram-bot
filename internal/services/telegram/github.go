@@ -14,6 +14,10 @@ type GitHubTelegramService struct {
 }
 
 func NewGitHubTelegramService(storageInstance *storage.Storage) (*GitHubTelegramService, error) {
+	if config.Global.GitHubTelegramBotToken == "" {
+		return nil, nil
+	}
+
 	base, err := NewBaseTelegramService("github", config.Global.GitHubTelegramBotToken, storageInstance)
 	if err != nil {
 		return nil, err
