@@ -1,10 +1,11 @@
-package telegram
+package gitlab
 
 import (
 	"context"
 	"fmt"
 
 	"git-telegram-bot/internal/config"
+	"git-telegram-bot/internal/services/telegram"
 	"git-telegram-bot/internal/storage"
 
 	"github.com/go-telegram/bot"
@@ -13,13 +14,13 @@ import (
 
 // GitLabTelegramService is a Telegram service for GitLab notifications
 type GitLabTelegramService struct {
-	*TelegramService
+	*telegram.TelegramService
 	pipelineStorage *storage.PipelineStorage
 }
 
 // NewGitLabTelegramService creates a new GitLab Telegram service
 func NewGitLabTelegramService(storageInstance *storage.Storage) (*GitLabTelegramService, error) {
-	s, err := NewTelegramService("gitlab", config.Global.GitLabTelegramBotToken, storageInstance)
+	s, err := telegram.NewTelegramService("gitlab", config.Global.GitLabTelegramBotToken, storageInstance)
 	if s == nil || err != nil {
 		return nil, err
 	}
@@ -29,16 +30,17 @@ func NewGitLabTelegramService(storageInstance *storage.Storage) (*GitLabTelegram
 		pipelineStorage: storageInstance.PipelineStorage,
 	}
 
-	s.registerCommandHandler("start", gs.handleStartCommand)
-	s.registerCommandHandler("help", gs.handleHelpCommand)
-	s.registerCommandHandler("webhook", gs.handleWebhookCommand)
+	s.RegisterCommandHandler("start", gs.handleStartCommand)
+	s.RegisterCommandHandler("help", gs.handleHelpCommand)
+	s.RegisterCommandHandler("webhook", gs.handleWebhookCommand)
 
 	return gs, nil
 }
 
-// InitBot initializes the GitLab Telegram bot
-func (s *GitLabTelegramService) InitBot() error {
-	return s.TelegramService.InitBot([]models.BotCommand{
+var (
+	profileDescription = "Monitors GitLab repo activity via webhooks and sends updates to Telegram."
+	whatCanThisBotDo   = "Generate a GitLub webhook URL, connect it to your repo, and receive events directly in Telegram."
+	commands           = []models.BotCommand{
 		{
 			Command:     "start",
 			Description: "Start the bot",
@@ -51,7 +53,18 @@ func (s *GitLabTelegramService) InitBot() error {
 			Command:     "webhook",
 			Description: "Get your unique GitLab webhook URL",
 		},
-	})
+	}
+)
+
+// InitBot initializes the GitLab Telegram bot
+func (s *GitLabTelegramService) InitBot() error {
+	if err := s.TelegramService.InitBot(); err != nil {
+		return err
+	}
+	s.SetProfileDescription(profileDescription)
+	s.SetWhatCanThisBotDo(whatCanThisBotDo)
+	s.SetCommands(commands)
+	return nil
 }
 
 // handleStartCommand handles the /start command

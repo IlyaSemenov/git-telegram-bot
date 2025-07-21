@@ -61,7 +61,7 @@ func NewTelegramService(botId string, token string, storageInstance *storage.Sto
 	}, nil
 }
 
-func (s *TelegramService) registerCommandHandler(command string, handler bot.HandlerFunc) {
+func (s *TelegramService) RegisterCommandHandler(command string, handler bot.HandlerFunc) {
 	commandText := "/" + command
 	commandTextPrefix := commandText + "@"
 	matchFunc := func(update *models.Update) bool {
@@ -86,7 +86,7 @@ func (s *TelegramService) StartBot(ctx context.Context) {
 }
 
 // InitBot initializes a Telegram bot (in Lambda, this runs only once after deployment)
-func (s *TelegramService) InitBot(commands []models.BotCommand) error {
+func (s *TelegramService) InitBot() error {
 	// Get bot info
 	ctx := context.Background()
 	me, err := s.bot.GetMe(ctx)
@@ -102,11 +102,6 @@ func (s *TelegramService) InitBot(commands []models.BotCommand) error {
 		return fmt.Errorf("Failed to set up %s bot webhook at %s: %w", s.botId, webhookURL, err)
 	} else {
 		log.Printf("Successfully set up %s bot webhook at %s", s.botId, webhookURL)
-	}
-
-	// Set up commands
-	if err := s.SetCommands(commands); err != nil {
-		return fmt.Errorf("Failed to set %s bot commands: %w", s.botId, err)
 	}
 
 	return nil
@@ -141,13 +136,39 @@ func (s *TelegramService) GetChatWebhookURL(chatID int64) string {
 }
 
 // SetCommands sets the list of available commands for the bot
-func (s *TelegramService) SetCommands(commands []models.BotCommand) error {
+func (s *TelegramService) SetCommands(commands []models.BotCommand) {
 	ctx := context.Background()
 	params := &bot.SetMyCommandsParams{
 		Commands: commands,
 	}
 	_, err := s.bot.SetMyCommands(ctx, params)
-	return err
+	if err != nil {
+		log.Printf("Failed to set commands for %s bot: %v", s.botId, err)
+	}
+}
+
+// SetWhatCanThisBotDo sets the "What can this bot do?" text ("description" in Telegram terms)
+func (s *TelegramService) SetWhatCanThisBotDo(description string) {
+	ctx := context.Background()
+	params := &bot.SetMyDescriptionParams{
+		Description: description,
+	}
+	_, err := s.bot.SetMyDescription(ctx, params)
+	if err != nil {
+		log.Printf("Failed to set profile description for %s bot: %v", s.botId, err)
+	}
+}
+
+// SetProfileDescription sets the bot profile description ("short description" in Telegram terms)
+func (s *TelegramService) SetProfileDescription(description string) {
+	ctx := context.Background()
+	params := &bot.SetMyShortDescriptionParams{
+		ShortDescription: description,
+	}
+	_, err := s.bot.SetMyShortDescription(ctx, params)
+	if err != nil {
+		log.Printf("Failed to set short description for %s bot: %v", s.botId, err)
+	}
 }
 
 // SendMessage sends a message to a Telegram chat

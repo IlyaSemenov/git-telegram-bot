@@ -3,7 +3,7 @@ package gitlab
 import (
 	"fmt"
 
-	"git-telegram-bot/internal/services/telegram"
+	telegram "git-telegram-bot/internal/services/telegram/gitlab"
 )
 
 type GitLabService struct {

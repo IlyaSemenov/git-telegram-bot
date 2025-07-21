@@ -3,7 +3,7 @@ package github
 import (
 	"fmt"
 
-	"git-telegram-bot/internal/services/telegram"
+	telegram "git-telegram-bot/internal/services/telegram/github"
 )
 
 type GitHubService struct {

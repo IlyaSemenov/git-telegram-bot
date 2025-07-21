@@ -1,10 +1,11 @@
-package telegram
+package github
 
 import (
 	"context"
 	"fmt"
 
 	"git-telegram-bot/internal/config"
+	"git-telegram-bot/internal/services/telegram"
 	"git-telegram-bot/internal/storage"
 
 	"github.com/go-telegram/bot"
@@ -12,11 +13,11 @@ import (
 )
 
 type GitHubTelegramService struct {
-	*TelegramService
+	*telegram.TelegramService
 }
 
 func NewGitHubTelegramService(storageInstance *storage.Storage) (*GitHubTelegramService, error) {
-	s, err := NewTelegramService("github", config.Global.GitHubTelegramBotToken, storageInstance)
+	s, err := telegram.NewTelegramService("github", config.Global.GitHubTelegramBotToken, storageInstance)
 	if s == nil || err != nil {
 		return nil, err
 	}
@@ -25,16 +26,17 @@ func NewGitHubTelegramService(storageInstance *storage.Storage) (*GitHubTelegram
 		TelegramService: s,
 	}
 
-	s.registerCommandHandler("start", gs.handleStartCommand)
-	s.registerCommandHandler("help", gs.handleHelpCommand)
-	s.registerCommandHandler("webhook", gs.handleWebhookCommand)
+	s.RegisterCommandHandler("start", gs.handleStartCommand)
+	s.RegisterCommandHandler("help", gs.handleHelpCommand)
+	s.RegisterCommandHandler("webhook", gs.handleWebhookCommand)
 
 	return gs, nil
 }
 
-// InitBot initializes the GitLab Telegram bot
-func (s *GitHubTelegramService) InitBot() error {
-	return s.TelegramService.InitBot([]models.BotCommand{
+var (
+	profileDescription = "Monitors GitHub repo activity via webhooks and sends updates to Telegram."
+	whatCanThisBotDo   = "Generate a GitHub webhook URL, connect it to your repo, and receive events directly in Telegram."
+	commands           = []models.BotCommand{
 		{
 			Command:     "start",
 			Description: "Start the bot",
@@ -47,7 +49,18 @@ func (s *GitHubTelegramService) InitBot() error {
 			Command:     "webhook",
 			Description: "Get your unique GitHub webhook URL",
 		},
-	})
+	}
+)
+
+// InitBot initializes the GitLab Telegram bot
+func (s *GitHubTelegramService) InitBot() error {
+	if err := s.TelegramService.InitBot(); err != nil {
+		return err
+	}
+	s.SetProfileDescription(profileDescription)
+	s.SetWhatCanThisBotDo(whatCanThisBotDo)
+	s.SetCommands(commands)
+	return nil
 }
 
 // handleStartCommand handles the /start command

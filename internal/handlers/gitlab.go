@@ -7,7 +7,8 @@ import (
 	"net/http"
 
 	"git-telegram-bot/internal/services/gitlab"
-	"git-telegram-bot/internal/services/telegram"
+	telegramBase "git-telegram-bot/internal/services/telegram"
+	telegram "git-telegram-bot/internal/services/telegram/gitlab"
 
 	"github.com/gorilla/mux"
 )
@@ -27,7 +28,7 @@ func NewGitLabHandler(telegramSvc *telegram.GitLabTelegramService, gitlabSvc *gi
 func (h *GitLabHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	// Get chat ID from URL
 	vars := mux.Vars(r)
-	chatID, err := telegram.ParseChatID(vars["chatID"])
+	chatID, err := telegramBase.ParseChatID(vars["chatID"])
 	if err != nil {
 		http.Error(w, "Failed to parse chatID from URL", http.StatusBadRequest)
 		return

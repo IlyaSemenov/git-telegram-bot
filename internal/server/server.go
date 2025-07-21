@@ -10,7 +10,8 @@ import (
 	"git-telegram-bot/internal/handlers"
 	"git-telegram-bot/internal/services/github"
 	"git-telegram-bot/internal/services/gitlab"
-	"git-telegram-bot/internal/services/telegram"
+	telegramGithub "git-telegram-bot/internal/services/telegram/github"
+	telegramGitlab "git-telegram-bot/internal/services/telegram/gitlab"
 	"git-telegram-bot/internal/storage"
 
 	"github.com/gorilla/mux"
@@ -41,7 +42,7 @@ func New() (*Server, error) {
 	}).Methods("GET")
 
 	// Setup GitHub service
-	githubTelegramSvc, err := telegram.NewGitHubTelegramService(storageInstance)
+	githubTelegramSvc, err := telegramGithub.NewGitHubTelegramService(storageInstance)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to initialize GitHub Telegram service: %w", err)
 	}
@@ -57,7 +58,7 @@ func New() (*Server, error) {
 	}
 
 	// Setup GitLab service
-	gitlabTelegramSvc, err := telegram.NewGitLabTelegramService(storageInstance)
+	gitlabTelegramSvc, err := telegramGitlab.NewGitLabTelegramService(storageInstance)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to initialize GitLab Telegram service: %w", err)
 	}
