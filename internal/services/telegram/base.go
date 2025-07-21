@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -22,6 +23,17 @@ type TelegramService struct {
 	chatStorage *storage.ChatStorage
 }
 
+var (
+	webhookSecretToken string
+)
+
+func getWebhookSecretToken() string {
+	if webhookSecretToken == "" {
+		webhookSecretToken = fmt.Sprintf("%x", sha256.Sum256(fmt.Appendf(nil, "%s:%s", config.Global.SecretKey, "telegram")))
+	}
+	return webhookSecretToken
+}
+
 // NewBTelegramService creates a new Telegram service
 func NewTelegramService(botId string, token string, storageInstance *storage.Storage) (*TelegramService, error) {
 	if token == "" {
@@ -34,6 +46,7 @@ func NewTelegramService(botId string, token string, storageInstance *storage.Sto
 		bot.WithDefaultHandler(func(ctx context.Context, bot *bot.Bot, update *models.Update) {
 			// Do nothing. The default implementation logs all unhandled update.
 		}),
+		bot.WithWebhookSecretToken(getWebhookSecretToken()),
 	}
 
 	botInstance, err := bot.New(token, opts...)
@@ -103,7 +116,8 @@ func (s *TelegramService) InitBot(commands []models.BotCommand) error {
 func (s *TelegramService) SetWebhook(webhookURL string) error {
 	ctx := context.Background()
 	params := &bot.SetWebhookParams{
-		URL: webhookURL,
+		URL:         webhookURL,
+		SecretToken: getWebhookSecretToken(),
 	}
 	_, err := s.bot.SetWebhook(ctx, params)
 	return err
