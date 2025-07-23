@@ -22,6 +22,10 @@ type PipelineEventData struct {
 		PathWithNamespace string `json:"path_with_namespace"`
 		WebURL            string `json:"web_url"`
 	} `json:"project"`
+	MergeRequest *struct {
+		Title string `json:"title"`
+		URL   string `json:"url"`
+	} `json:"merge_request"`
 	User struct {
 		Name string `json:"name"`
 	} `json:"user"`
@@ -75,15 +79,28 @@ func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte) error 
 	// Replace underscores with spaces in the status
 	statusDisplay := strings.ReplaceAll(event.ObjectAttributes.Status, "_", " ")
 
+	// Format branch/MR reference
+	var refInfo string
+	if event.MergeRequest != nil {
+		refInfo = fmt.Sprintf("merge request <a href=\"%s\">%s</a>",
+			html.EscapeString(event.MergeRequest.URL),
+			html.EscapeString(event.MergeRequest.Title),
+		)
+	} else {
+		refInfo = fmt.Sprintf("branch <code>%s</code>",
+			html.EscapeString(event.ObjectAttributes.Ref),
+		)
+	}
+
 	message.WriteString(fmt.Sprintf(
-		"%s Pipeline %s: <a href=\"%s\">%s</a> — <a href=\"%s\">Pipeline #%d</a> (branch <code>%s</code>)",
+		"%s Pipeline %s: <a href=\"%s\">%s</a> — <a href=\"%s\">Pipeline #%d</a> (%s)",
 		emoji,
 		html.EscapeString(statusDisplay),
 		event.Project.WebURL,
 		html.EscapeString(event.Project.Name),
 		event.ObjectAttributes.URL,
 		event.ObjectAttributes.ID,
-		html.EscapeString(event.ObjectAttributes.Ref),
+		refInfo,
 	))
 
 	// Add build information
