@@ -65,7 +65,7 @@ func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte) error 
 	case "created":
 		emoji = "🛠️"
 	case "waiting_for_resource":
-		emoji = "⏳"
+		emoji = "🚦"
 	case "preparing":
 		emoji = "⚙️"
 	case "manual":
@@ -133,7 +133,7 @@ func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte) error 
 			case "scheduled":
 				buildEmoji = "📅"
 			case "waiting_for_resource":
-				buildEmoji = "⏳"
+				buildEmoji = "🚦"
 			default:
 				buildEmoji = "ℹ️"
 			}
