@@ -1,9 +1,11 @@
 package gitlab
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"html"
+	"slices"
 	"strings"
 )
 
@@ -29,13 +31,15 @@ type PipelineEventData struct {
 	User struct {
 		Name string `json:"name"`
 	} `json:"user"`
-	Builds []struct {
-		ID       int     `json:"id"`
-		Stage    string  `json:"stage"`
-		Name     string  `json:"name"`
-		Status   string  `json:"status"`
-		Duration float64 `json:"duration"`
-	} `json:"builds"`
+	Builds []Build `json:"builds"`
+}
+
+type Build = struct {
+	ID       int     `json:"id"`
+	Stage    string  `json:"stage"`
+	Name     string  `json:"name"`
+	Status   string  `json:"status"`
+	Duration float64 `json:"duration"`
 }
 
 func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte) error {
@@ -105,6 +109,9 @@ func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte) error 
 
 	// Add build information
 	if len(event.Builds) > 0 {
+		slices.SortFunc(event.Builds, func(a, b Build) int {
+			return cmp.Compare(a.ID, b.ID)
+		})
 		message.WriteString(":\n\n")
 		for _, build := range event.Builds {
 			// Add emoji based on build status
