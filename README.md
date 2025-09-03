@@ -12,7 +12,6 @@ It's an alternative to [notifine](https://github.com/mhkafadar/notifine) which i
   - GitHub workflow run events
   - GitLab pipeline events with real-time updates
   - GitLab merge request events
-- Easy deployment to AWS Lambda with Terraform
 
 ## How It Works
 
@@ -58,37 +57,18 @@ This bot is designed with privacy as a core principle. Here’s how data is hand
 
 This is a privacy-focused relay bot that retains only the minimal data required for functionality.
 
-## Documentation
+## Developer Documentation
 
 - [Running Locally](docs/run-local.md)
 - [Deploying to AWS Lambda with Terraform](docs/deploy-aws-lambda.md)
+- [Deploying to Dokku](docs/deploy-dokku.md)
 
 ## Requirements
 
 - Go 1.24 or higher
 - Telegram Bot Token (from [@BotFather](https://t.me/BotFather))
 - AWS account (for Lambda deployment)
-- Terraform 1.0+ (for infrastructure deployment)
-
-## Quick Start
-
-### Local Development
-
-1. Clone this repository
-2. Create a `.env` file based on `.env.example`
-3. Run `go mod tidy` to download dependencies
-4. Run `make run` to start the bot locally
-5. Add the bot to your Telegram chat
-6. Follow the bot's instructions to set up GitHub webhooks
-
-### AWS Deployment
-
-1. Clone this repository
-2. Navigate to the `terraform` directory
-3. Create a `terraform.tfvars` file with your configuration
-4. Run `make terraform-init` and `make terraform-apply`
-5. Run `make update` to deploy the updated code to Lambda
-6. Add the bot to your Telegram chat
+- Terraform 1.0+ (for infrastructure deployment, if using AWS Lambda)
 
 ## License
 

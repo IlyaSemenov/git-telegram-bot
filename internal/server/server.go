@@ -140,5 +140,5 @@ func (s *Server) Router() *mux.Router {
 }
 
 func (s *Server) ListenAndServe() error {
-	return http.ListenAndServe(":8080", s.router)
+	return http.ListenAndServe(config.Global.ListenAddress, s.router)
 }

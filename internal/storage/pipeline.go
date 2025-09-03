@@ -8,11 +8,7 @@ import (
 	"time"
 
 	"gocloud.dev/docstore"
-	_ "gocloud.dev/docstore/awsdynamodb"
-	_ "gocloud.dev/docstore/memdocstore"
 	"gocloud.dev/gcerrors"
-
-	"git-telegram-bot/internal/config"
 )
 
 // Pipeline represents a GitLab pipeline with its associated Telegram message
@@ -31,14 +27,7 @@ type PipelineStorage struct {
 
 // NewPipelineStorage creates a new pipeline storage instance
 func NewPipelineStorage(ctx context.Context) (*PipelineStorage, error) {
-	var connectionString string
-	if config.Global.StorageConnectionStringBase != "" {
-		connectionString = config.Global.StorageConnectionStringBase + "-pipelines?partition_key=pipeline_update_key"
-	} else {
-		connectionString = "mem://pipelines/pipeline_update_key"
-	}
-
-	collection, err := docstore.OpenCollection(ctx, connectionString)
+	collection, err := openCollection(ctx, "pipelines", "pipeline_update_key", "")
 	if err != nil {
 		return nil, err
 	}

@@ -1,0 +1,13 @@
+{
+  "healthchecks": {
+    "web": [
+      {
+        "type": "startup",
+        "name": "health check",
+        "initialDelay": 2,
+        "path": "/health",
+        "content": "OK"
+      }
+    ]
+  }
+}

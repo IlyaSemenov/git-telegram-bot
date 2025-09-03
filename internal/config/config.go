@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"strings"
 
@@ -16,6 +17,7 @@ import (
 var Global *Config
 
 type Config struct {
+	ListenAddress               string
 	GitHubTelegramBotToken      string
 	GitLabTelegramBotToken      string
 	SecretKey                   string
@@ -62,6 +64,13 @@ func Initialize() error {
 		}
 	}
 
+	var listenAddress string
+	if listenPort := os.Getenv("PORT"); listenPort != "" {
+		listenAddress = ":" + listenPort
+	} else {
+		listenAddress = ":8080"
+	}
+
 	// Try to auto-discover BASE_URL if we're in Lambda
 	baseURL := os.Getenv("BASE_URL")
 	if isLambda && baseURL == "" {
@@ -90,12 +99,16 @@ func Initialize() error {
 
 	// Auto-detect storage connection string base
 	var storageConnectionStringBase string
-	if isLambda {
+	if mongoURL := os.Getenv("MONGO_URL"); mongoURL != "" {
+		// Running with MongoDB
+		storageConnectionStringBase = setupMongoEnvAndGetConnectionStringBase(mongoURL)
+	} else if isLambda {
 		// Running in AWS - use DynamoDB
 		storageConnectionStringBase = fmt.Sprintf("dynamodb://%s", lambdaFunctionName)
 	}
 
 	Global = &Config{
+		ListenAddress:               listenAddress,
 		GitHubTelegramBotToken:      githubTelegramBotToken,
 		GitLabTelegramBotToken:      gitlabTelegramBotToken,
 		SecretKey:                   secretKey,
@@ -105,4 +118,26 @@ func Initialize() error {
 	}
 
 	return nil
+}
+
+// Due to MongoDB driver requirement, we need to set the MONGO_SERVER_URL env var.
+func setupMongoEnvAndGetConnectionStringBase(mongoURL string) string {
+	// Parse the URL to extract components.
+	u, err := url.Parse(mongoURL)
+	if err != nil {
+		log.Fatalf("Failed to parse MONGO_URL: %v", err)
+	}
+
+	// Extract db name from path (trim leading /).
+	dbName := strings.TrimPrefix(u.Path, "/")
+	if dbName == "" {
+		log.Fatal("MONGO_URL missing database name")
+	}
+
+	// Set the env var for the docstore mongo opener.
+	if err := os.Setenv("MONGO_SERVER_URL", mongoURL); err != nil {
+		log.Fatalf("Failed to set MONGO_SERVER_URL: %v", err)
+	}
+
+	return fmt.Sprintf("mongo://%s", dbName)
 }

@@ -4,6 +4,15 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
+
+	"git-telegram-bot/internal/config"
+
+	"gocloud.dev/docstore"
+	// Import all docstore drivers once for the entire package
+	_ "gocloud.dev/docstore/awsdynamodb"
+	_ "gocloud.dev/docstore/memdocstore"
+	_ "gocloud.dev/docstore/mongodocstore"
 )
 
 // Storage provides centralized access to all storage types
@@ -28,6 +37,33 @@ func NewStorage(ctx context.Context) (*Storage, error) {
 		ChatStorage:     chatStorage,
 		PipelineStorage: pipelineStorage,
 	}, nil
+}
+
+// getConnectionString returns the appropriate connection string for a collection
+func getConnectionString(collectionName string, keyField string, sortKey string) string {
+	base := config.Global.StorageConnectionStringBase
+
+	if strings.HasPrefix(base, "dynamodb://") {
+		// DynamoDB format
+		suffix := fmt.Sprintf("-%s?partition_key=%s", collectionName, keyField)
+		if sortKey != "" {
+			suffix += fmt.Sprintf("&sort_key=%s", sortKey)
+		}
+		return base + suffix
+	}
+
+	if strings.HasPrefix(base, "mongo://") {
+		return fmt.Sprintf("%s/%s?id_field=%s", base, collectionName, keyField)
+	}
+
+	// Default fallback
+	return fmt.Sprintf("mem://%s/%s", collectionName, keyField)
+}
+
+// openCollection opens a docstore collection with the appropriate connection string
+func openCollection(ctx context.Context, collectionName string, keyField string, sortKey string) (*docstore.Collection, error) {
+	connectionString := getConnectionString(collectionName, keyField, sortKey)
+	return docstore.OpenCollection(ctx, connectionString)
 }
 
 // Close closes all storage connections and returns the first error encountered.

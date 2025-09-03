@@ -5,11 +5,7 @@ import (
 	"time"
 
 	"gocloud.dev/docstore"
-	_ "gocloud.dev/docstore/awsdynamodb"
-	_ "gocloud.dev/docstore/memdocstore"
 	"gocloud.dev/gcerrors"
-
-	"git-telegram-bot/internal/config"
 )
 
 // Chat represents a Telegram chat where the bot has been added
@@ -27,14 +23,7 @@ type ChatStorage struct {
 
 // NewChatStorage creates a new chat storage instance
 func NewChatStorage(ctx context.Context) (*ChatStorage, error) {
-	var connectionString string
-	if config.Global.StorageConnectionStringBase != "" {
-		connectionString = config.Global.StorageConnectionStringBase + "-chats?partition_key=chat_id&sort_key=bot_type"
-	} else {
-		connectionString = "mem://chats/chat_id"
-	}
-
-	collection, err := docstore.OpenCollection(ctx, connectionString)
+	collection, err := openCollection(ctx, "chats", "chat_id", "bot_type")
 	if err != nil {
 		return nil, err
 	}

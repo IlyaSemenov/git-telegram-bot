@@ -2,6 +2,9 @@
 
 This guide explains how to deploy the Git-Telegram Bot to AWS Lambda using Terraform.
 
+> Heads up! AWS Lambda connectivity to Telegram servers turned to be unstable.
+> The reference bots now run on a self-hosted Docker server.
+
 ## Prerequisites
 
 1. [Terraform](https://www.terraform.io/downloads.html) installed (v1.0.0+)
