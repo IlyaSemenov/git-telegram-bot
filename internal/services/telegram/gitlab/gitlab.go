@@ -87,19 +87,26 @@ func (s *GitLabTelegramService) handleHelpCommand(ctx context.Context, b *bot.Bo
 	s.SendMessageOrLogError(update.Message.Chat.ID, text)
 }
 
-// handleGitLabCommand handles the /gitlab command
+// handleWebhookCommand handles the /webhook command
 func (s *GitLabTelegramService) handleWebhookCommand(ctx context.Context, b *bot.Bot, update *models.Update) {
 	webhookURL := s.GetChatWebhookURL(update.Message.Chat.ID)
 
 	// Create response message
-	text := fmt.Sprintf("🔗 <b>Your GitLab Webhook URL</b>\n\n<code>%s</code>\n\n", webhookURL) +
-		"<b>How to set up:</b>\n\n" +
-		"1. Go to your GitLab project\n" +
-		"2. Click on Settings > Webhooks\n" +
-		"3. Paste the URL above in the 'URL' field\n" +
-		"4. Select the events you want to receive\n" +
-		"5. Click 'Add webhook'\n\n" +
-		"You'll receive a confirmation message when the webhook is set up correctly."
+	text := fmt.Sprintf("🔗 <b>Your GitLab Webhook URL</b>\n\n<code>%s</code>\n", webhookURL) +
+		"\n" +
+		"<b>How to set up:</b>\n" +
+		"\n" +
+		"1. Go to your GitLab project.\n" +
+		"2. Click on Settings > Webhooks.\n" +
+		"3. Click 'Add new webhook'.\n" +
+		"4. Paste the URL above in the 'URL' field.\n" +
+		"5. Select the events you want to receive:\n" +
+		"• Push\n" +
+		"• Merge request\n" +
+		"• Pipeline\n" +
+		"6. Click 'Add webhook'.\n" +
+		"\n" +
+		"Use the 'Test' button to test the webhook."
 
 	s.SendMessageOrLogError(update.Message.Chat.ID, text)
 }
