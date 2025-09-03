@@ -10,7 +10,7 @@ This guide explains how to deploy the Git-Telegram Bot to AWS Lambda using Terra
 1. [Terraform](https://www.terraform.io/downloads.html) installed (v1.0.0+)
 2. AWS credentials configured (`~/.aws/credentials` or environment variables)
 3. A Telegram bot token (from [@BotFather](https://t.me/BotFather))
-4. Go installed on your local machine (1.24+)
+4. Go installed on your local machine (1.25+)
 
 ## Step 1: Configure Terraform Variables
 

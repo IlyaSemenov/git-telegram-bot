@@ -65,7 +65,7 @@ This is a privacy-focused relay bot that retains only the minimal data required 
 
 ## Requirements
 
-- Go 1.24 or higher
+- Go 1.25 or higher
 - Telegram Bot Token (from [@BotFather](https://t.me/BotFather))
 - AWS account (for Lambda deployment)
 - Terraform 1.0+ (for infrastructure deployment, if using AWS Lambda)
