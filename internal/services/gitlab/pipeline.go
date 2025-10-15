@@ -25,6 +25,7 @@ type PipelineEventData struct {
 		WebURL            string `json:"web_url"`
 	} `json:"project"`
 	MergeRequest *struct {
+		IID   int    `json:"iid"`
 		Title string `json:"title"`
 		URL   string `json:"url"`
 	} `json:"merge_request"`
@@ -42,7 +43,7 @@ type Build = struct {
 	Duration float64 `json:"duration"`
 }
 
-func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte) error {
+func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte, includeProject bool) error {
 	var event PipelineEventData
 
 	if err := json.Unmarshal(payload, &event); err != nil {
@@ -80,31 +81,33 @@ func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte) error 
 		emoji = "ℹ️"
 	}
 
+	message.WriteString(emoji + " ")
+	if includeProject {
+		message.WriteString(fmt.Sprintf("<b>%s</b>: ", html.EscapeString(event.Project.Name)))
+	}
+
 	// Replace underscores with spaces in the status
 	statusDisplay := strings.ReplaceAll(event.ObjectAttributes.Status, "_", " ")
 
-	// Format branch/MR reference
-	var refInfo string
+	// Build the "for" part based on whether it's for a branch or MR
+	var forPart string
 	if event.MergeRequest != nil {
-		refInfo = fmt.Sprintf("merge request <a href=\"%s\">%s</a>",
-			html.EscapeString(event.MergeRequest.URL),
+		forPart = fmt.Sprintf(
+			"<a href=\"%s\">!%d %s</a>",
+			event.MergeRequest.URL,
+			event.MergeRequest.IID,
 			html.EscapeString(event.MergeRequest.Title),
 		)
 	} else {
-		refInfo = fmt.Sprintf("branch <code>%s</code>",
-			html.EscapeString(event.ObjectAttributes.Ref),
-		)
+		forPart = fmt.Sprintf("<code>%s</code>", html.EscapeString(event.ObjectAttributes.Ref))
 	}
 
 	message.WriteString(fmt.Sprintf(
-		"%s Pipeline %s: <a href=\"%s\">%s</a> — <a href=\"%s\">Pipeline #%d</a> (%s)",
-		emoji,
-		html.EscapeString(statusDisplay),
-		event.Project.WebURL,
-		html.EscapeString(event.Project.Name),
+		"<a href=\"%s\">Pipeline #%d</a> %s for %s",
 		event.ObjectAttributes.URL,
 		event.ObjectAttributes.ID,
-		refInfo,
+		html.EscapeString(statusDisplay),
+		forPart,
 	))
 
 	// Add build information

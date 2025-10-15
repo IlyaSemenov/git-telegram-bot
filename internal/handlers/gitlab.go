@@ -34,6 +34,9 @@ func (h *GitLabHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if project name should be included in messages
+	includeProject := r.URL.Query().Get("project") != ""
+
 	// Read request body
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -50,7 +53,7 @@ func (h *GitLabHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.gitlabSvc.HandleEvent(chatID, eventType, body); err != nil {
+	if err := h.gitlabSvc.HandleEvent(chatID, eventType, body, includeProject); err != nil {
 		log.Printf("Failed to handle GitLab event: %v", err)
 		http.Error(w, "Failed to handle GitLab event", http.StatusInternalServerError)
 		return

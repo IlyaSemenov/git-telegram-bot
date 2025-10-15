@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func (s *GitHubService) handleWorkflowRunEvent(chatID int64, payload []byte) error {
+func (s *GitHubService) handleWorkflowRunEvent(chatID int64, payload []byte, includeProject bool) error {
 	var event struct {
 		Action      string `json:"action"`
 		WorkflowRun struct {
@@ -47,14 +47,16 @@ func (s *GitHubService) handleWorkflowRunEvent(chatID int64, payload []byte) err
 		emoji = "ℹ️"
 	}
 
+	message.WriteString(emoji + " ")
+	if includeProject {
+		message.WriteString(fmt.Sprintf("<b>%s</b>: ", html.EscapeString(event.Repository.FullName)))
+	}
+
 	message.WriteString(fmt.Sprintf(
-		"%s Workflow %s: <a href=\"%s\">%s</a> — <a href=\"%s\">%s</a>.",
-		emoji,
-		html.EscapeString(event.WorkflowRun.Conclusion),
-		event.Repository.HTMLURL,
-		html.EscapeString(event.Repository.FullName),
+		"<a href=\"%s\">%s</a> %s.",
 		event.WorkflowRun.HTMLURL,
 		html.EscapeString(event.WorkflowRun.Name),
+		html.EscapeString(event.WorkflowRun.Conclusion),
 	))
 
 	return s.telegramSvc.SendMessage(chatID, message.String())

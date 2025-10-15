@@ -97,8 +97,10 @@ func (s *GitHubTelegramService) handleWebhookCommand(ctx context.Context, b *bot
 		"4. Set Content type to 'application/json'\n" +
 		"5. Select the events you want to receive\n" +
 		"6. Click 'Add webhook'\n\n" +
-		"To receive notifications for a specific branch, append: <code>" + html.EscapeString("?branch=main") + "</code>\n\n" +
-		"You'll receive a confirmation message when the webhook is set up correctly."
+		"You'll receive a confirmation message when the webhook is set up correctly.\n\n" +
+		"<b>Optional parameters:</b>\n\n" +
+		"• Filter by branch: <code>" + html.EscapeString("?branch=main") + "</code>\n" +
+		"• Include project name: <code>" + html.EscapeString("?project=1") + "</code>"
 
 	s.SendMessageOrLogError(update.Message.Chat.ID, text)
 }

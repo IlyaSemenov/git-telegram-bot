@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func (s *GitLabService) handlePushEvent(chatID int64, payload []byte) error {
+func (s *GitLabService) handlePushEvent(chatID int64, payload []byte, includeProject bool) error {
 	var event struct {
 		Ref      string `json:"ref"`
 		Before   string `json:"before"`
@@ -41,21 +41,32 @@ func (s *GitLabService) handlePushEvent(chatID int64, payload []byte) error {
 	var message strings.Builder
 
 	// Check if this is a branch deletion event (after hash is all zeros)
-	if event.After == "0000000000000000000000000000000000000000" {
+	isBranchDeletion := event.After == "0000000000000000000000000000000000000000"
+
+	// Write emoji based on event type
+	if isBranchDeletion {
+		message.WriteString("🗑️ ")
+	} else {
+		message.WriteString("🚀 ")
+	}
+
+	// Add project name if requested
+	if includeProject {
+		message.WriteString(fmt.Sprintf("<b>%s</b>: ", html.EscapeString(event.Project.Name)))
+	}
+
+	// Write event-specific message
+	if isBranchDeletion {
 		message.WriteString(fmt.Sprintf(
-			"🗑️ <b>%s</b> deleted branch <code>%s</code> from <a href=\"%s\">%s</a>",
+			"<b>%s</b> deleted branch <code>%s</code>",
 			html.EscapeString(event.UserName),
 			html.EscapeString(branch),
-			event.Project.WebURL,
-			html.EscapeString(event.Project.Name),
 		))
 	} else {
 		// Regular push event
 		message.WriteString(fmt.Sprintf(
-			"🚀 <b>%s</b> pushed to <a href=\"%s\">%s</a> (branch <code>%s</code>)",
+			"<b>%s</b> pushed to <code>%s</code>",
 			html.EscapeString(event.UserName),
-			event.Project.WebURL,
-			html.EscapeString(event.Project.Name),
 			html.EscapeString(branch),
 		))
 

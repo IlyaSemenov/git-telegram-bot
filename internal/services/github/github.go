@@ -16,14 +16,14 @@ func NewGitHubService(telegramSvc *telegram.GitHubTelegramService) *GitHubServic
 	}
 }
 
-func (s *GitHubService) HandleEvent(chatID int64, eventType string, payload []byte, branchFilter string) error {
+func (s *GitHubService) HandleEvent(chatID int64, eventType string, payload []byte, branchFilter string, includeProject bool) error {
 	switch eventType {
 	case "ping":
-		return s.handlePingEvent(chatID, payload)
+		return s.handlePingEvent(chatID, payload, includeProject)
 	case "push":
-		return s.handlePushEvent(chatID, payload, branchFilter)
+		return s.handlePushEvent(chatID, payload, branchFilter, includeProject)
 	case "workflow_run":
-		return s.handleWorkflowRunEvent(chatID, payload)
+		return s.handleWorkflowRunEvent(chatID, payload, includeProject)
 	default:
 		return fmt.Errorf("unsupported event type: %s", eventType)
 	}

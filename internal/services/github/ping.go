@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"html"
+	"strings"
 )
 
-func (s *GitHubService) handlePingEvent(chatID int64, payload []byte) error {
+func (s *GitHubService) handlePingEvent(chatID int64, payload []byte, includeProject bool) error {
 	var event struct {
 		Zen        string `json:"zen"`
 		HookID     int    `json:"hook_id"`
@@ -20,11 +21,19 @@ func (s *GitHubService) handlePingEvent(chatID int64, payload []byte) error {
 		return err
 	}
 
-	message := fmt.Sprintf(
-		"✅ GitHub webhook configured successfully for <a href=\"%s\">%s</a>.",
+	// Build message
+	var message strings.Builder
+
+	message.WriteString("✅ ")
+	if includeProject {
+		message.WriteString(fmt.Sprintf("<b>%s</b>: ", html.EscapeString(event.Repository.FullName)))
+	}
+
+	message.WriteString(fmt.Sprintf(
+		"Webhook configured for <a href=\"%s\">%s</a>.",
 		event.Repository.HTMLURL,
 		html.EscapeString(event.Repository.FullName),
-	)
+	))
 
-	return s.telegramSvc.SendMessage(chatID, message)
+	return s.telegramSvc.SendMessage(chatID, message.String())
 }

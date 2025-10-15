@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func (s *GitHubService) handlePushEvent(chatID int64, payload []byte, branchFilter string) error {
+func (s *GitHubService) handlePushEvent(chatID int64, payload []byte, branchFilter string, includeProject bool) error {
 	var event struct {
 		Ref        string `json:"ref"`
 		Before     string `json:"before"`
@@ -48,13 +48,26 @@ func (s *GitHubService) handlePushEvent(chatID int64, payload []byte, branchFilt
 	var message strings.Builder
 
 	// Check if this is a branch deletion event (after hash is all zeros)
-	if event.After == "0000000000000000000000000000000000000000" {
+	isBranchDeletion := event.After == "0000000000000000000000000000000000000000"
+
+	// Write emoji based on event type
+	if isBranchDeletion {
+		message.WriteString("🗑️ ")
+	} else {
+		message.WriteString("🚀 ")
+	}
+
+	// Add project name if requested
+	if includeProject {
+		message.WriteString(fmt.Sprintf("<b>%s</b>: ", html.EscapeString(event.Repository.FullName)))
+	}
+
+	// Write event-specific message
+	if isBranchDeletion {
 		message.WriteString(fmt.Sprintf(
-			"🗑️ <b>%s</b> deleted branch <code>%s</code> from <a href=\"%s\">%s</a>",
+			"<b>%s</b> deleted branch <code>%s</code>",
 			html.EscapeString(event.Pusher.Name),
 			html.EscapeString(branch),
-			event.Repository.HTMLURL,
-			html.EscapeString(event.Repository.FullName),
 		))
 	} else {
 		// Use appropriate verb based on whether it's a force push
@@ -64,11 +77,9 @@ func (s *GitHubService) handlePushEvent(chatID int64, payload []byte, branchFilt
 		}
 
 		message.WriteString(fmt.Sprintf(
-			"🚀 <b>%s</b> %s to <a href=\"%s\">%s</a> (branch <code>%s</code>)",
+			"<b>%s</b> %s to <code>%s</code>",
 			html.EscapeString(event.Pusher.Name),
 			pushVerb,
-			event.Repository.HTMLURL,
-			html.EscapeString(event.Repository.FullName),
 			html.EscapeString(branch),
 		))
 

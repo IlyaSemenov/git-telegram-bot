@@ -7,10 +7,11 @@ import (
 	"strings"
 )
 
-func (s *GitLabService) handleMergeRequestEvent(chatID int64, payload []byte) error {
+func (s *GitLabService) handleMergeRequestEvent(chatID int64, payload []byte, includeProject bool) error {
 	var event struct {
 		ObjectAttributes struct {
 			ID           int    `json:"id"`
+			IID          int    `json:"iid"`
 			Title        string `json:"title"`
 			Description  string `json:"description"`
 			State        string `json:"state"`
@@ -73,14 +74,17 @@ func (s *GitLabService) handleMergeRequestEvent(chatID int64, payload []byte) er
 		action = event.ObjectAttributes.Action
 	}
 
+	message.WriteString(emoji + " ")
+	if includeProject {
+		message.WriteString(fmt.Sprintf("<b>%s</b>: ", html.EscapeString(event.Project.Name)))
+	}
+
 	message.WriteString(fmt.Sprintf(
-		"%s <b>%s</b> %s merge request: <a href=\"%s\">%s</a> — <a href=\"%s\">%s</a> (<code>%s</code> → <code>%s</code>).",
-		emoji,
+		"<b>%s</b> %s <a href=\"%s\">!%d %s</a> (<code>%s</code> → <code>%s</code>).",
 		html.EscapeString(event.User.Name),
 		action,
-		event.Project.WebURL,
-		html.EscapeString(event.Project.Name),
 		event.ObjectAttributes.URL,
+		event.ObjectAttributes.IID,
 		html.EscapeString(event.ObjectAttributes.Title),
 		html.EscapeString(event.ObjectAttributes.SourceBranch),
 		html.EscapeString(event.ObjectAttributes.TargetBranch),
