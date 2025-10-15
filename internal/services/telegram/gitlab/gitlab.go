@@ -104,6 +104,7 @@ func (s *GitLabTelegramService) handleWebhookCommand(ctx context.Context, b *bot
 		"• Push\n" +
 		"• Merge request\n" +
 		"• Pipeline\n" +
+		"• Issues\n" +
 		"6. Click 'Add webhook'.\n" +
 		"\n" +
 		"Use the 'Test' button to test the webhook."

@@ -24,6 +24,8 @@ func (s *GitLabService) HandleEvent(chatID int64, eventType string, payload []by
 		return s.handlePipelineEvent(chatID, payload)
 	case "Merge Request Hook":
 		return s.handleMergeRequestEvent(chatID, payload)
+	case "Issue Hook":
+		return s.handleIssueEvent(chatID, payload)
 	default:
 		return fmt.Errorf("unsupported event type: %s", eventType)
 	}
