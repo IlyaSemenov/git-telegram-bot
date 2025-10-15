@@ -91,7 +91,7 @@ func (s *GitHubTelegramService) handleWebhookCommand(ctx context.Context, b *bot
 	text := fmt.Sprintf("🔗 <b>Your GitHub Webhook URL</b>\n\n<code>%s</code>\n\n", webhookURL) +
 		"<b>How to set up:</b>\n\n" +
 		"1. Go to your GitHub repository\n" +
-		"2. Click on Settings > Webhooks > Add webhook\n" +
+		"2. Click on Settings → Webhooks → Add webhook\n" +
 		"3. Paste the URL above in the 'Payload URL' field\n" +
 		"4. Set Content type to 'application/json'\n" +
 		"5. Select the events you want to receive\n" +

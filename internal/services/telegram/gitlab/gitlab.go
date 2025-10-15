@@ -97,7 +97,7 @@ func (s *GitLabTelegramService) handleWebhookCommand(ctx context.Context, b *bot
 		"<b>How to set up:</b>\n" +
 		"\n" +
 		"1. Go to your GitLab project.\n" +
-		"2. Click on Settings > Webhooks.\n" +
+		"2. Click on Settings → Webhooks.\n" +
 		"3. Click 'Add new webhook'.\n" +
 		"4. Paste the URL above in the 'URL' field.\n" +
 		"5. Select the events you want to receive:\n" +

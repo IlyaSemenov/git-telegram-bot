@@ -89,7 +89,7 @@ The repository is configured with GitHub Actions to automatically deploy your bo
 
 In your GitHub repository:
 
-1. Go to Settings > Secrets and variables > Actions
+1. Go to Settings → Secrets and variables → Actions
 2. Add the following secrets:
    - `AWS_ACCESS_KEY_ID`: Your AWS access key
    - `AWS_SECRET_ACCESS_KEY`: Your AWS secret key
@@ -124,7 +124,7 @@ If you encounter issues with the bot, you can check the CloudWatch logs:
 make logs
 ```
 
-You can also view logs in the AWS Console under CloudWatch > Log Groups.
+You can also view logs in the AWS Console under CloudWatch → Log Groups.
 
 ## Using Custom Domain Name
 
