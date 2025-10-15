@@ -107,7 +107,7 @@ func (s *GitLabTelegramService) handleWebhookCommand(ctx context.Context, b *bot
 		"6. Click 'Add webhook'\n\n" +
 		"Use the 'Test' button to test the webhook.\n\n" +
 		"<b>Optional parameters:</b>\n\n" +
-		"• Include project name: <code>" + html.EscapeString("?project=1") + "</code>"
+		"• <code>" + html.EscapeString("?project=1") + "</code> — include project name in messages"
 
 	s.SendMessageOrLogError(update.Message.Chat.ID, text)
 }
