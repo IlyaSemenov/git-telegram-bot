@@ -3,6 +3,7 @@ package github
 import (
 	"context"
 	"fmt"
+	"html"
 
 	"git-telegram-bot/internal/config"
 	"git-telegram-bot/internal/services/telegram"
@@ -96,6 +97,7 @@ func (s *GitHubTelegramService) handleWebhookCommand(ctx context.Context, b *bot
 		"4. Set Content type to 'application/json'\n" +
 		"5. Select the events you want to receive\n" +
 		"6. Click 'Add webhook'\n\n" +
+		"To receive notifications for a specific branch, append: <code>" + html.EscapeString("?branch=main") + "</code>\n\n" +
 		"You'll receive a confirmation message when the webhook is set up correctly."
 
 	s.SendMessageOrLogError(update.Message.Chat.ID, text)

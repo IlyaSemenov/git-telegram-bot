@@ -20,6 +20,18 @@ It's an alternative to [notifine](https://github.com/mhkafadar/notifine) which i
 3. Add this URL to your GitHub/GitLab repository's webhook settings
 4. Events are now delivered to your Telegram chat
 
+### Branch Filtering (GitHub)
+
+You can filter GitHub webhook events by branch by adding a `?branch=<branch-name>` query parameter to your webhook URL.
+
+**Example:**
+
+```url
+https://webhook.git-watch.mobicom.dev/github/123456789?branch=main
+```
+
+This will only send notifications for events that occur on the `main` branch.
+
 ## Privacy Policy
 
 This bot is designed with privacy as a core principle. Here’s how data is handled:
