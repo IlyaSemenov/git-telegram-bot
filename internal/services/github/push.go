@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"html"
 	"strings"
+
+	"git-telegram-bot/internal/services/telegram"
 )
 
 func (s *GitHubService) handlePushEvent(chatID int64, payload []byte, branchFilter string, includeProject bool) error {
@@ -91,7 +93,7 @@ func (s *GitHubService) handlePushEvent(chatID int64, payload []byte, branchFilt
 					"👉 <b>%s</b>: <a href=\"%s\">%s</a>\n",
 					html.EscapeString(commit.Author.Name),
 					commit.URL,
-					html.EscapeString(strings.TrimSpace(commit.Message)),
+					html.EscapeString(telegram.FormatCommitMessage(commit.Message)),
 				))
 			}
 		}
