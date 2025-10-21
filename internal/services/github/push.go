@@ -90,10 +90,9 @@ func (s *GitHubService) handlePushEvent(chatID int64, payload []byte, branchFilt
 			message.WriteString(":\n")
 			for _, commit := range event.Commits {
 				message.WriteString(fmt.Sprintf(
-					"👉 <b>%s</b>: <a href=\"%s\">%s</a>\n",
+					"👉 <b>%s</b>: %s\n",
 					html.EscapeString(commit.Author.Name),
-					commit.URL,
-					html.EscapeString(telegram.FormatCommitMessage(commit.Message)),
+					telegram.FormatCommitLink(commit.Message, commit.URL),
 				))
 			}
 		}
