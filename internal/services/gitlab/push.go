@@ -72,7 +72,7 @@ func (s *GitLabService) handlePushEvent(chatID int64, payload []byte, includePro
 
 		// Add commit information
 		if len(event.Commits) > 0 {
-			message.WriteString(":\n\n")
+			message.WriteString(":\n")
 			for _, commit := range event.Commits {
 				message.WriteString(fmt.Sprintf(
 					"👉 <b>%s</b>: <a href=\"%s\">%s</a>\n",

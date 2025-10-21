@@ -115,7 +115,7 @@ func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte, includ
 		slices.SortFunc(event.Builds, func(a, b Build) int {
 			return cmp.Compare(a.ID, b.ID)
 		})
-		message.WriteString(":\n\n")
+		message.WriteString(":\n")
 		for _, build := range event.Builds {
 			// Add emoji based on build status
 			var buildEmoji string
