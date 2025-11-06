@@ -50,6 +50,11 @@ func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte, includ
 		return err
 	}
 
+	// Skip sending telegram update if the pipeline is skipped entirely
+	if event.ObjectAttributes.Status == "skipped" {
+		return nil
+	}
+
 	var message strings.Builder
 
 	// Add emoji based on status
