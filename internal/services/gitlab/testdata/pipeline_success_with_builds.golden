@@ -1,0 +1,3 @@
+✅ <a href="https://gitlab.com/owner/repo/-/pipelines/42">Pipeline #42</a> success for <code>main</code>:
+✅ <b>compile</b> (30 seconds)
+✅ <b>unit-tests</b> (90 seconds)

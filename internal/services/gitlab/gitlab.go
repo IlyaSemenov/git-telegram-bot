@@ -3,14 +3,14 @@ package gitlab
 import (
 	"fmt"
 
-	telegram "git-telegram-bot/internal/services/telegram/gitlab"
+	"git-telegram-bot/internal/services/telegram"
 )
 
 type GitLabService struct {
-	telegramSvc *telegram.GitLabTelegramService
+	telegramSvc telegram.PipelineMessageSender
 }
 
-func NewGitLabService(telegramSvc *telegram.GitLabTelegramService) *GitLabService {
+func NewGitLabService(telegramSvc telegram.PipelineMessageSender) *GitLabService {
 	return &GitLabService{
 		telegramSvc: telegramSvc,
 	}

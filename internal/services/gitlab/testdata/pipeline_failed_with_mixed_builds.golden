@@ -1,0 +1,3 @@
+❌ <a href="https://gitlab.com/owner/repo/-/pipelines/42">Pipeline #42</a> failed for <code>main</code>:
+❌ <b>test</b> (21 seconds)
+✅ <b>deploy_dev</b> (137 seconds)

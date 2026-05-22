@@ -1,0 +1,24 @@
+{
+  "event_type": "Pipeline Hook",
+  "is_pipeline": true,
+  "payload": {
+    "builds": [],
+    "merge_request": {
+      "iid": 5,
+      "title": "Fix bug \u003cwith HTML\u003e",
+      "url": "https://gitlab.com/owner/repo/-/merge_requests/5"
+    },
+    "object_attributes": {
+      "id": 42,
+      "ref": "feature",
+      "status": "failed",
+      "url": "https://gitlab.com/owner/repo/-/pipelines/42"
+    },
+    "project": {
+      "name": "repo"
+    },
+    "user": {
+      "name": "John"
+    }
+  }
+}

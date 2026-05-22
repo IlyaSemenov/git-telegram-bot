@@ -1,4 +1,4 @@
-.PHONY: build clean deploy deploy-staging lint build-lambda update update-staging update-env run dev terraform-init terraform-apply terraform-destroy
+.PHONY: build clean deploy deploy-staging lint build-lambda update update-staging update-env run dev terraform-init terraform-apply terraform-destroy test test-update
 
 # Environment variable defaults
 ENV ?= prod
@@ -62,3 +62,11 @@ run:
 # Run with hot reload
 dev:
 	go run github.com/air-verse/air@latest -c .air.toml
+
+# Run tests
+test:
+	go test ./...
+
+# Update golden files
+test-update:
+	GOLDIE_UPDATE=1 go test -count=1 ./...

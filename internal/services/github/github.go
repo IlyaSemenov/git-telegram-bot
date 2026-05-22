@@ -3,14 +3,14 @@ package github
 import (
 	"fmt"
 
-	telegram "git-telegram-bot/internal/services/telegram/github"
+	"git-telegram-bot/internal/services/telegram"
 )
 
 type GitHubService struct {
-	telegramSvc *telegram.GitHubTelegramService
+	telegramSvc telegram.MessageSender
 }
 
-func NewGitHubService(telegramSvc *telegram.GitHubTelegramService) *GitHubService {
+func NewGitHubService(telegramSvc telegram.MessageSender) *GitHubService {
 	return &GitHubService{
 		telegramSvc: telegramSvc,
 	}

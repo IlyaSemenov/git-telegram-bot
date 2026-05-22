@@ -1,0 +1,24 @@
+{
+  "event_type": "Push Hook",
+  "payload": {
+    "after": "def456",
+    "before": "abc123",
+    "commits": [
+      {
+        "author": {
+          "name": "John"
+        },
+        "id": "def456",
+        "message": "fix: resolve bug",
+        "url": "https://gitlab.com/owner/repo/-/commit/def456"
+      }
+    ],
+    "project": {
+      "name": "repo",
+      "path_with_namespace": "owner/repo",
+      "web_url": "https://gitlab.com/owner/repo"
+    },
+    "ref": "refs/heads/main",
+    "user_name": "John"
+  }
+}

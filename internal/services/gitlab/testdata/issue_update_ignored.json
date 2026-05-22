@@ -1,0 +1,19 @@
+{
+  "event_type": "Issue Hook",
+  "expect_no_output": true,
+  "payload": {
+    "object_attributes": {
+      "action": "update",
+      "id": 1,
+      "iid": 10,
+      "title": "Bug report",
+      "url": "https://gitlab.com/owner/repo/-/issues/10"
+    },
+    "project": {
+      "name": "repo"
+    },
+    "user": {
+      "name": "John"
+    }
+  }
+}

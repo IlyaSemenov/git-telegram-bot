@@ -1,0 +1,15 @@
+{
+  "event_type": "Push Hook",
+  "payload": {
+    "after": "0000000000000000000000000000000000000000",
+    "before": "abc123",
+    "commits": [],
+    "project": {
+      "name": "repo",
+      "path_with_namespace": "owner/repo",
+      "web_url": "https://gitlab.com/owner/repo"
+    },
+    "ref": "refs/heads/feature",
+    "user_name": "John"
+  }
+}

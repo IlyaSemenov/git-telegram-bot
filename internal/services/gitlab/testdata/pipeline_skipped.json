@@ -1,0 +1,17 @@
+{
+  "event_type": "Pipeline Hook",
+  "expect_no_output": true,
+  "payload": {
+    "object_attributes": {
+      "duration": 0,
+      "id": 42,
+      "ref": "main",
+      "status": "skipped",
+      "url": "https://gitlab.com/owner/repo/-/pipelines/42"
+    },
+    "project": {
+      "name": "repo",
+      "path_with_namespace": "owner/repo"
+    }
+  }
+}

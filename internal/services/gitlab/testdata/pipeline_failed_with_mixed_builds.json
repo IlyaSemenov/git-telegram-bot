@@ -1,0 +1,37 @@
+{
+  "event_type": "Pipeline Hook",
+  "is_pipeline": true,
+  "payload": {
+    "builds": [
+      {
+        "duration": 21,
+        "id": 1,
+        "name": "test",
+        "stage": "test",
+        "status": "failed"
+      },
+      {
+        "duration": 137,
+        "id": 2,
+        "name": "deploy_dev",
+        "stage": "deploy",
+        "status": "success"
+      }
+    ],
+    "object_attributes": {
+      "duration": 158,
+      "id": 42,
+      "ref": "main",
+      "status": "failed",
+      "url": "https://gitlab.com/owner/repo/-/pipelines/42"
+    },
+    "project": {
+      "name": "repo",
+      "path_with_namespace": "owner/repo",
+      "web_url": "https://gitlab.com/owner/repo"
+    },
+    "user": {
+      "name": "John"
+    }
+  }
+}

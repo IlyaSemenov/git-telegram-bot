@@ -1,0 +1,18 @@
+{
+  "event_type": "push",
+  "include_project": true,
+  "payload": {
+    "after": "def456",
+    "before": "abc123",
+    "commits": [],
+    "forced": false,
+    "pusher": {
+      "name": "John"
+    },
+    "ref": "refs/heads/main",
+    "repository": {
+      "full_name": "owner/repo",
+      "html_url": "https://github.com/owner/repo"
+    }
+  }
+}

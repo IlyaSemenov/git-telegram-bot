@@ -1,0 +1,26 @@
+{
+  "event_type": "Pipeline Hook",
+  "is_pipeline": true,
+  "payload": {
+    "builds": [],
+    "merge_request": {
+      "iid": 12,
+      "title": "Add new feature",
+      "url": "https://gitlab.com/owner/repo/-/merge_requests/12"
+    },
+    "object_attributes": {
+      "duration": 60,
+      "id": 42,
+      "ref": "feature-branch",
+      "status": "success",
+      "url": "https://gitlab.com/owner/repo/-/pipelines/42"
+    },
+    "project": {
+      "name": "repo",
+      "path_with_namespace": "owner/repo"
+    },
+    "user": {
+      "name": "John"
+    }
+  }
+}

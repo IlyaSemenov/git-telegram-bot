@@ -1,0 +1,26 @@
+{
+  "event_type": "push",
+  "payload": {
+    "after": "def456",
+    "before": "abc123",
+    "commits": [
+      {
+        "author": {
+          "name": "John"
+        },
+        "id": "def456",
+        "message": "fix: resolve bug",
+        "url": "https://github.com/owner/repo/commit/def456"
+      }
+    ],
+    "forced": false,
+    "pusher": {
+      "name": "John"
+    },
+    "ref": "refs/heads/main",
+    "repository": {
+      "full_name": "owner/repo",
+      "html_url": "https://github.com/owner/repo"
+    }
+  }
+}

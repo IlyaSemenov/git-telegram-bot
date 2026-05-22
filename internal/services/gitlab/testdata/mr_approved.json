@@ -1,0 +1,20 @@
+{
+  "event_type": "Merge Request Hook",
+  "payload": {
+    "object_attributes": {
+      "action": "approved",
+      "id": 1,
+      "iid": 5,
+      "source_branch": "feature",
+      "target_branch": "main",
+      "title": "Add feature",
+      "url": "https://gitlab.com/owner/repo/-/merge_requests/5"
+    },
+    "project": {
+      "name": "repo"
+    },
+    "user": {
+      "name": "Jane"
+    }
+  }
+}
