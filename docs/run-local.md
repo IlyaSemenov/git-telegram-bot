@@ -4,21 +4,35 @@ This guide explains how to run the Git-Telegram Bot locally for development and 
 
 ## Prerequisites
 
-1. Go installed on your local machine
+1. [mise](https://mise.jdx.dev) installed on your local machine
 2. A Telegram bot token (from [@BotFather](https://t.me/BotFather))
 3. A tunneling tool to expose your local server to the internet (Microsoft Dev Tunnels, ngrok, etc.)
 
-## Step 1: Install Dependencies
+## Step 1: Install Tools
 
-Before running the bot, you need to download all required dependencies:
+All required tools (Go, Air) are managed via [mise](https://mise.jdx.dev). Install mise first:
+
+```bash
+curl https://mise.run | sh
+```
+
+Then install all project tools:
+
+```bash
+mise install
+```
+
+This will install Go and [Air](https://github.com/air-verse/air) (hot-reload tool for Go) as specified in `mise.toml`, with versions pinned in `mise.lock`.
+
+## Step 2: Install Go Dependencies
 
 ```bash
 go mod tidy
 ```
 
-This command will download all dependencies listed in the `go.mod` file and create/update the `go.sum` file with the correct checksums. This step is essential when you first clone the repository or when dependencies change.
+This command will download all Go module dependencies listed in the `go.mod` file and create/update the `go.sum` file with the correct checksums.
 
-## Step 2: Set Up a Tunnel
+## Step 3: Set Up a Tunnel
 
 Since the bot operates exclusively in webhook mode, you need to expose your local server to the internet.
 
@@ -38,7 +52,7 @@ ngrok http 8080
 
 3. Note the HTTPS URL provided by ngrok (e.g., `https://a1b2c3d4.ngrok.io`)
 
-## Step 3: Set Up Environment Variables
+## Step 4: Set Up Environment Variables
 
 Create a `.env` file in the root directory of the project based on the `.env.example` file:
 
@@ -54,7 +68,7 @@ To generate a random secret key:
 openssl rand -base64 32
 ```
 
-## Step 4: Run the Bot
+## Step 5: Run the Bot
 
 Start the bot in local mode with hot reload:
 
@@ -74,7 +88,7 @@ The bot will start and automatically set up a webhook with Telegram using your t
 
 If you encounter errors about missing dependencies or `go.sum` entries, run `go mod tidy` again to resolve them.
 
-## Step 5: Test the Bot
+## Step 6: Test the Bot
 
 1. Add your bot to a Telegram group or send a direct message to it
 2. Use the `/github` or `/gitlab` command to get a unique webhook URL

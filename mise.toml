@@ -1,2 +1,6 @@
+[settings]
+lockfile = true
+
 [tools]
+air = "latest"
 go = "latest"

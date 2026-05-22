@@ -61,7 +61,7 @@ run:
 
 # Run with hot reload
 dev:
-	go run github.com/air-verse/air@latest -c .air.toml
+	air -c .air.toml
 
 # Run tests
 test:
