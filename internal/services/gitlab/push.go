@@ -9,7 +9,7 @@ import (
 	"git-telegram-bot/internal/services/telegram"
 )
 
-func (s *GitLabService) handlePushEvent(chatID int64, payload []byte, includeProject bool) error {
+func (s *GitLabService) handlePushEvent(chatID int64, payload []byte, branchFilter string, includeProject bool) error {
 	var event struct {
 		Ref      string `json:"ref"`
 		Before   string `json:"before"`
@@ -38,6 +38,11 @@ func (s *GitLabService) handlePushEvent(chatID int64, payload []byte, includePro
 
 	// Extract branch name from ref
 	branch := strings.TrimPrefix(event.Ref, "refs/heads/")
+
+	// If branch filter is specified and doesn't match the current branch, skip this event
+	if branchFilter != "" && branchFilter != branch {
+		return nil
+	}
 
 	// Build message
 	var message strings.Builder

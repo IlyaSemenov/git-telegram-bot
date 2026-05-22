@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func (s *GitHubService) handleWorkflowRunEvent(chatID int64, payload []byte, includeProject bool) error {
+func (s *GitHubService) handleWorkflowRunEvent(chatID int64, payload []byte, branchFilter string, includeProject bool) error {
 	var event struct {
 		Action      string `json:"action"`
 		WorkflowRun struct {
@@ -15,6 +15,7 @@ func (s *GitHubService) handleWorkflowRunEvent(chatID int64, payload []byte, inc
 			HTMLURL    string `json:"html_url"`
 			Status     string `json:"status"`
 			Conclusion string `json:"conclusion"`
+			HeadBranch string `json:"head_branch"`
 		} `json:"workflow_run"`
 		Repository struct {
 			FullName string `json:"full_name"`
@@ -28,6 +29,11 @@ func (s *GitHubService) handleWorkflowRunEvent(chatID int64, payload []byte, inc
 
 	// Only notify on completed workflow runs
 	if event.Action != "completed" {
+		return nil
+	}
+
+	// If branch filter is specified and doesn't match the workflow run's branch, skip this event
+	if branchFilter != "" && branchFilter != event.WorkflowRun.HeadBranch {
 		return nil
 	}
 

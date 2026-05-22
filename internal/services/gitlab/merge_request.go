@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func (s *GitLabService) handleMergeRequestEvent(chatID int64, payload []byte, includeProject bool) error {
+func (s *GitLabService) handleMergeRequestEvent(chatID int64, payload []byte, branchFilter string, includeProject bool) error {
 	var event struct {
 		ObjectAttributes struct {
 			ID           int    `json:"id"`
@@ -32,6 +32,11 @@ func (s *GitLabService) handleMergeRequestEvent(chatID int64, payload []byte, in
 
 	if err := json.Unmarshal(payload, &event); err != nil {
 		return err
+	}
+
+	// If branch filter is specified and doesn't match the target branch, skip this event
+	if branchFilter != "" && branchFilter != event.ObjectAttributes.TargetBranch {
+		return nil
 	}
 
 	// Only notify on known MR actions

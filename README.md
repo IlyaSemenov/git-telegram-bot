@@ -8,10 +8,11 @@ It's an alternative to [notifine](https://github.com/mhkafadar/notifine) which i
 
 - Receive GitHub and GitLab webhook events and forward them to Telegram chats
 - Support for multiple events:
-  - Push events (with branch filtering)
+  - Push events
   - GitHub workflow run events
   - GitLab pipeline events with real-time updates
   - GitLab merge request events
+  - Branch filtering for push, pipeline, workflow run, and merge request events
 
 ## How It Works
 
@@ -36,9 +37,20 @@ Add the `?project=1` query parameter to include the project/repository name at t
 
 > 🚀 **My Project**: **John Doe** pushed to `main`.
 
-#### Branch Filtering (GitHub)
+#### Branch Filtering
 
-You can filter GitHub webhook events by branch by adding a `?branch=<branch-name>` query parameter to your webhook URL.
+Add `?branch=<name>` to your webhook URL to only receive events for a specific branch. Works for both GitHub and GitLab.
+
+**Filtered events:**
+
+| Event | Branch matched against |
+| --- | --- |
+| Push | Pushed branch |
+| GitHub workflow_run | Workflow's `head_branch` |
+| GitLab Pipeline | Pipeline `ref` |
+| GitLab Merge Request | Target branch |
+
+Events not tied to a branch (e.g. issues) are not affected by this filter.
 
 ## Privacy Policy
 

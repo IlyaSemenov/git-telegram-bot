@@ -1,0 +1,23 @@
+{
+  "event_type": "Merge Request Hook",
+  "branch_filter": "main",
+  "expect_no_output": true,
+  "payload": {
+    "object_attributes": {
+      "action": "open",
+      "id": 1,
+      "iid": 5,
+      "source_branch": "feature",
+      "target_branch": "develop",
+      "title": "Add feature",
+      "url": "https://gitlab.com/owner/repo/-/merge_requests/5"
+    },
+    "project": {
+      "name": "repo",
+      "path_with_namespace": "owner/repo"
+    },
+    "user": {
+      "name": "John"
+    }
+  }
+}

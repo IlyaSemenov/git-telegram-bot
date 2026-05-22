@@ -23,7 +23,7 @@ func (s *GitHubService) HandleEvent(chatID int64, eventType string, payload []by
 	case "push":
 		return s.handlePushEvent(chatID, payload, branchFilter, includeProject)
 	case "workflow_run":
-		return s.handleWorkflowRunEvent(chatID, payload, includeProject)
+		return s.handleWorkflowRunEvent(chatID, payload, branchFilter, includeProject)
 	default:
 		return fmt.Errorf("unsupported event type: %s", eventType)
 	}
