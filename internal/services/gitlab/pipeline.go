@@ -43,7 +43,7 @@ type Build = struct {
 	Duration float64 `json:"duration"`
 }
 
-func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte, branchFilter string, includeProject bool) error {
+func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte, branchFilters []string, includeProject bool) error {
 	var event PipelineEventData
 
 	if err := json.Unmarshal(payload, &event); err != nil {
@@ -55,8 +55,8 @@ func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte, branch
 		return nil
 	}
 
-	// If branch filter is specified and doesn't match the pipeline ref, skip this event
-	if branchFilter != "" && branchFilter != event.ObjectAttributes.Ref {
+	// If none of the branch filters match the pipeline ref, skip this event
+	if len(branchFilters) > 0 && !slices.Contains(branchFilters, event.ObjectAttributes.Ref) {
 		return nil
 	}
 

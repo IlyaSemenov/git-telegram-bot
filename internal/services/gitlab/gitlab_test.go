@@ -46,7 +46,7 @@ func newService() (*GitLabService, *mockPipelineMessageSender) {
 // fixture is the JSON format stored in testdata/*.json
 type fixture struct {
 	EventType      string                 `json:"event_type"`
-	BranchFilter   string                 `json:"branch_filter,omitempty"`
+	BranchFilters  []string               `json:"branch_filters,omitempty"`
 	IncludeProject bool                   `json:"include_project,omitempty"`
 	IsPipeline     bool                   `json:"is_pipeline,omitempty"`
 	ExpectNoOutput bool                   `json:"expect_no_output,omitempty"`
@@ -94,7 +94,7 @@ func TestGitLabEvents(t *testing.T) {
 			f := loadFixture(t, name)
 			svc, mock := newService()
 
-			err := svc.HandleEvent(chatID, f.EventType, f.payloadJSON(t), f.BranchFilter, f.IncludeProject)
+			err := svc.HandleEvent(chatID, f.EventType, f.payloadJSON(t), f.BranchFilters, f.IncludeProject)
 			if err != nil {
 				t.Fatalf("HandleEvent error: %v", err)
 			}
@@ -164,7 +164,7 @@ func TestPipelineUpdatesSameURL(t *testing.T) {
 	}
 
 	runningJSON, _ := json.Marshal(runningPayload)
-	err := svc.HandleEvent(chatID, "Pipeline Hook", runningJSON, "", false)
+	err := svc.HandleEvent(chatID, "Pipeline Hook", runningJSON, nil, false)
 	if err != nil {
 		t.Fatalf("first HandleEvent error: %v", err)
 	}
@@ -183,7 +183,7 @@ func TestPipelineUpdatesSameURL(t *testing.T) {
 	}
 
 	successJSON, _ := json.Marshal(successPayload)
-	err = svc.HandleEvent(chatID, "Pipeline Hook", successJSON, "", false)
+	err = svc.HandleEvent(chatID, "Pipeline Hook", successJSON, nil, false)
 	if err != nil {
 		t.Fatalf("second HandleEvent error: %v", err)
 	}
@@ -211,7 +211,7 @@ func TestPipelineUpdatesSameURL(t *testing.T) {
 
 func TestHandleEvent_UnsupportedEventType(t *testing.T) {
 	svc, _ := newService()
-	err := svc.HandleEvent(chatID, "Unknown Hook", nil, "", false)
+	err := svc.HandleEvent(chatID, "Unknown Hook", nil, nil, false)
 	if err == nil {
 		t.Fatal("expected error for unsupported event type")
 	}

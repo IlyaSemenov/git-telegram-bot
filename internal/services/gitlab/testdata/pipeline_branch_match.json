@@ -1,7 +1,7 @@
 {
   "event_type": "Pipeline Hook",
   "is_pipeline": true,
-  "branch_filter": "main",
+  "branch_filters": ["develop", "main"],
   "payload": {
     "builds": [],
     "object_attributes": {

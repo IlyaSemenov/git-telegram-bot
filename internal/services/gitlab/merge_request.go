@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"html"
+	"slices"
 	"strings"
 )
 
-func (s *GitLabService) handleMergeRequestEvent(chatID int64, payload []byte, branchFilter string, includeProject bool) error {
+func (s *GitLabService) handleMergeRequestEvent(chatID int64, payload []byte, branchFilters []string, includeProject bool) error {
 	var event struct {
 		ObjectAttributes struct {
 			ID           int    `json:"id"`
@@ -34,8 +35,8 @@ func (s *GitLabService) handleMergeRequestEvent(chatID int64, payload []byte, br
 		return err
 	}
 
-	// If branch filter is specified and doesn't match the target branch, skip this event
-	if branchFilter != "" && branchFilter != event.ObjectAttributes.TargetBranch {
+	// If none of the branch filters match the target branch, skip this event
+	if len(branchFilters) > 0 && !slices.Contains(branchFilters, event.ObjectAttributes.TargetBranch) {
 		return nil
 	}
 

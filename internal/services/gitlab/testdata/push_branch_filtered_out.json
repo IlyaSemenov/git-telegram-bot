@@ -1,6 +1,6 @@
 {
   "event_type": "Push Hook",
-  "branch_filter": "main",
+  "branch_filters": ["main"],
   "expect_no_output": true,
   "payload": {
     "after": "def456",

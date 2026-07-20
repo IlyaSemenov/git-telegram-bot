@@ -1,6 +1,6 @@
 {
   "event_type": "Push Hook",
-  "branch_filter": "main",
+  "branch_filters": ["develop", "main"],
   "payload": {
     "after": "def456",
     "before": "abc123",

@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"html"
+	"slices"
 	"strings"
 
 	"git-telegram-bot/internal/services/telegram"
 )
 
-func (s *GitLabService) handlePushEvent(chatID int64, payload []byte, branchFilter string, includeProject bool) error {
+func (s *GitLabService) handlePushEvent(chatID int64, payload []byte, branchFilters []string, includeProject bool) error {
 	var event struct {
 		Ref      string `json:"ref"`
 		Before   string `json:"before"`
@@ -39,8 +40,8 @@ func (s *GitLabService) handlePushEvent(chatID int64, payload []byte, branchFilt
 	// Extract branch name from ref
 	branch := strings.TrimPrefix(event.Ref, "refs/heads/")
 
-	// If branch filter is specified and doesn't match the current branch, skip this event
-	if branchFilter != "" && branchFilter != branch {
+	// If none of the branch filters match the current branch, skip this event
+	if len(branchFilters) > 0 && !slices.Contains(branchFilters, branch) {
 		return nil
 	}
 

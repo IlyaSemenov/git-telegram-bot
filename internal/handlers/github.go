@@ -34,8 +34,8 @@ func (h *GitHubHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get branch filter from query parameters if present
-	branchFilter := r.URL.Query().Get("branch")
+	// Get branch filters from repeated query parameters if present
+	branchFilters := r.URL.Query()["branch"]
 	// Check if project name should be included in messages
 	includeProject := r.URL.Query().Get("project") != ""
 
@@ -56,7 +56,7 @@ func (h *GitHubHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse GitHub event
-	if err := h.githubSvc.HandleEvent(chatID, eventType, body, branchFilter, includeProject); err != nil {
+	if err := h.githubSvc.HandleEvent(chatID, eventType, body, branchFilters, includeProject); err != nil {
 		log.Printf("Failed to parse GitHub event: %v", err)
 		http.Error(w, "Failed to parse GitHub event", http.StatusBadRequest)
 		return

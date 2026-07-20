@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"html"
+	"slices"
 	"strings"
 )
 
-func (s *GitHubService) handleWorkflowRunEvent(chatID int64, payload []byte, branchFilter string, includeProject bool) error {
+func (s *GitHubService) handleWorkflowRunEvent(chatID int64, payload []byte, branchFilters []string, includeProject bool) error {
 	var event struct {
 		Action      string `json:"action"`
 		WorkflowRun struct {
@@ -32,8 +33,8 @@ func (s *GitHubService) handleWorkflowRunEvent(chatID int64, payload []byte, bra
 		return nil
 	}
 
-	// If branch filter is specified and doesn't match the workflow run's branch, skip this event
-	if branchFilter != "" && branchFilter != event.WorkflowRun.HeadBranch {
+	// If none of the branch filters match the workflow run's branch, skip this event
+	if len(branchFilters) > 0 && !slices.Contains(branchFilters, event.WorkflowRun.HeadBranch) {
 		return nil
 	}
 

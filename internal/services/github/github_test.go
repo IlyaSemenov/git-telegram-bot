@@ -34,7 +34,7 @@ func newService() (*GitHubService, *mockMessageSender) {
 // fixture is the JSON format stored in testdata/*.json
 type fixture struct {
 	EventType      string                 `json:"event_type"`
-	BranchFilter   string                 `json:"branch_filter,omitempty"`
+	BranchFilters  []string               `json:"branch_filters,omitempty"`
 	IncludeProject bool                   `json:"include_project,omitempty"`
 	ExpectNoOutput bool                   `json:"expect_no_output,omitempty"`
 	Payload        map[string]interface{} `json:"payload"`
@@ -81,7 +81,7 @@ func TestGitHubEvents(t *testing.T) {
 			f := loadFixture(t, name)
 			svc, mock := newService()
 
-			err := svc.HandleEvent(chatID, f.EventType, f.payloadJSON(t), f.BranchFilter, f.IncludeProject)
+			err := svc.HandleEvent(chatID, f.EventType, f.payloadJSON(t), f.BranchFilters, f.IncludeProject)
 			if err != nil {
 				t.Fatalf("HandleEvent error: %v", err)
 			}
@@ -107,7 +107,7 @@ func TestGitHubEvents(t *testing.T) {
 
 func TestHandleEvent_UnsupportedEventType(t *testing.T) {
 	svc, _ := newService()
-	err := svc.HandleEvent(chatID, "unknown", nil, "", false)
+	err := svc.HandleEvent(chatID, "unknown", nil, nil, false)
 	if err == nil {
 		t.Fatal("expected error for unsupported event type")
 	}

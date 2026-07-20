@@ -39,7 +39,9 @@ Add the `?project=1` query parameter to include the project/repository name at t
 
 #### Branch Filtering
 
-Add `?branch=<name>` to your webhook URL to only receive events for a specific branch. Works for both GitHub and GitLab.
+Add `?branch=<name>` to your webhook URL to only receive events for a specific branch.
+Repeat the parameter to receive events for any of several branches, for example `?branch=main&branch=develop`.
+Branch filtering works for both GitHub and GitLab.
 
 **Filtered events:**
 
