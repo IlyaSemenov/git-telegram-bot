@@ -49,9 +49,9 @@ func (s *GitHubService) handleWorkflowRunEvent(chatID int64, payload []byte, bra
 	case "failure":
 		emoji = "❌"
 	case "cancelled":
-		emoji = "⚠️"
+		emoji = "💨"
 	default:
-		emoji = "ℹ️"
+		emoji = "❔"
 	}
 
 	message.WriteString(emoji + " ")

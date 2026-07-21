@@ -76,7 +76,7 @@ func (s *GitLabService) handleMergeRequestEvent(chatID int64, payload []byte, br
 		emoji = "❌"
 		action = "revoked approval for"
 	default:
-		emoji = "ℹ️"
+		emoji = "❔"
 		action = event.ObjectAttributes.Action
 	}
 

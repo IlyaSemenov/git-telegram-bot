@@ -70,15 +70,15 @@ func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte, branch
 	case "failed":
 		emoji = "❌"
 	case "running":
-		emoji = "🔄"
+		emoji = "▶️"
 	case "pending":
 		emoji = "⏳"
 	case "canceled":
-		emoji = "⚠️"
+		emoji = "💨"
 	case "skipped":
-		emoji = "⏭️"
+		emoji = "➖"
 	case "created":
-		emoji = "🛠️"
+		emoji = "◻️"
 	case "waiting_for_resource":
 		emoji = "🚦"
 	case "preparing":
@@ -88,7 +88,7 @@ func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte, branch
 	case "scheduled":
 		emoji = "📅"
 	default:
-		emoji = "ℹ️"
+		emoji = "❔"
 	}
 
 	message.WriteString(emoji + " ")
@@ -135,17 +135,17 @@ func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte, branch
 			case "failed":
 				buildEmoji = "❌"
 			case "running":
-				buildEmoji = "🔄"
+				buildEmoji = "▶️"
 			case "pending":
 				buildEmoji = "⏳"
 			case "canceled":
-				buildEmoji = "⚠️"
+				buildEmoji = "💨"
 			case "canceling":
-				buildEmoji = "🛑"
+				buildEmoji = "⏹️"
 			case "skipped":
-				buildEmoji = "⏭️"
+				buildEmoji = "➖"
 			case "created":
-				buildEmoji = "🛠️"
+				buildEmoji = "◻️"
 			case "manual":
 				buildEmoji = "✋"
 			case "preparing":
@@ -155,7 +155,7 @@ func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte, branch
 			case "waiting_for_resource":
 				buildEmoji = "🚦"
 			default:
-				buildEmoji = "ℹ️"
+				buildEmoji = "❔"
 			}
 
 			// Format duration as string

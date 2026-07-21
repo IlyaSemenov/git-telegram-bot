@@ -56,7 +56,7 @@ func (s *GitLabService) handleIssueEvent(chatID int64, payload []byte, includePr
 		emoji = "🔄"
 		action = "reopened"
 	default:
-		emoji = "ℹ️"
+		emoji = "❔"
 		action = event.ObjectAttributes.Action
 	}
 
