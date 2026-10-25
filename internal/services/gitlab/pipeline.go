@@ -36,11 +36,12 @@ type PipelineEventData struct {
 }
 
 type Build = struct {
-	ID       int     `json:"id"`
-	Stage    string  `json:"stage"`
-	Name     string  `json:"name"`
-	Status   string  `json:"status"`
-	Duration float64 `json:"duration"`
+	ID           int     `json:"id"`
+	Stage        string  `json:"stage"`
+	Name         string  `json:"name"`
+	Status       string  `json:"status"`
+	AllowFailure bool    `json:"allow_failure"`
+	Duration     float64 `json:"duration"`
 }
 
 func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte, branchFilters []string, includeProject bool) error {
@@ -133,7 +134,11 @@ func (s *GitLabService) handlePipelineEvent(chatID int64, payload []byte, branch
 			case "success":
 				buildEmoji = "✅"
 			case "failed":
-				buildEmoji = "❌"
+				if build.AllowFailure {
+					buildEmoji = "⚠️"
+				} else {
+					buildEmoji = "❌"
+				}
 			case "running":
 				buildEmoji = "▶️"
 			case "pending":

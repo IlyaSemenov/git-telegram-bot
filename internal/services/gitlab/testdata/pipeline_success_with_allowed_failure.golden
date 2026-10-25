@@ -1,0 +1,4 @@
+✅ <a href="https://gitlab.com/owner/repo/-/pipelines/42">Pipeline #42</a> success for <code>main</code>:
+✅ <b>check</b> (86 seconds)
+⚠️ <b>sync</b> (9 seconds)
+✅ <b>build</b> (206 seconds)
